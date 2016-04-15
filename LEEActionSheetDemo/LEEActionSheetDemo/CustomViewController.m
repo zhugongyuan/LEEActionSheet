@@ -12,6 +12,8 @@
 
 #import "CustomViewController.h"
 
+#import "LEEActionSheet.h"
+
 @implementation CustomViewController
 
 - (void)viewDidLoad {
@@ -89,7 +91,7 @@
     [self.view addSubview:button5];
     
     
-    UIView *redView=[[UIView alloc]initWithFrame:CGRectMake(0, 400, 320, 200)];
+    UIView *redView=[[UIView alloc]initWithFrame:CGRectMake(0, 400, CGRectGetWidth(self.view.frame), 200)];
     
     redView.backgroundColor = [UIColor redColor];
     

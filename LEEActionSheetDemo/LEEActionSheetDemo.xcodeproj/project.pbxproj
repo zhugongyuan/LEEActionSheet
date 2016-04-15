@@ -110,10 +110,10 @@
 				9BFB0F321CC08C9B00C4D338 /* LEEActionSheet */,
 				9BFB0F021CC08C5900C4D338 /* AppDelegate.h */,
 				9BFB0F031CC08C5900C4D338 /* AppDelegate.m */,
-				9BFB0F361CC08D0500C4D338 /* CustomViewController.h */,
-				9BFB0F371CC08D0500C4D338 /* CustomViewController.m */,
 				9BFB0F381CC08D0500C4D338 /* ViewController.h */,
 				9BFB0F391CC08D0500C4D338 /* ViewController.m */,
+				9BFB0F361CC08D0500C4D338 /* CustomViewController.h */,
+				9BFB0F371CC08D0500C4D338 /* CustomViewController.m */,
 				9BFB0F081CC08C5900C4D338 /* Main.storyboard */,
 				9BFB0F0B1CC08C5900C4D338 /* Assets.xcassets */,
 				9BFB0F0D1CC08C5900C4D338 /* LaunchScreen.storyboard */,
@@ -433,7 +433,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				INFOPLIST_FILE = LEEActionSheetDemo/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.lee.LEEActionSheetDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -444,7 +446,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				INFOPLIST_FILE = LEEActionSheetDemo/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.lee.LEEActionSheetDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";

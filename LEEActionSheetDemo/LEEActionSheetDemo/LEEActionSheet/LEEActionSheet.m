@@ -18,7 +18,7 @@
 
 @interface LEEActionSheet ()
 
-@property (nonatomic , weak ) id currentCustomAlertDelegate;
+@property (nonatomic , weak ) id currentCustomActionSheetDelegate;
 
 @end
 
@@ -30,7 +30,58 @@
 
 @implementation LEEActionSheet
 
+- (void)dealloc{
+    
+    _system = nil;
+    
+    _custom = nil;
+    
+}
 
++ (LEEActionSheet *)shareActionSheetManager{
+    
+    static LEEActionSheet *actionSheetManager;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        
+        actionSheetManager = [LEEActionSheet actionSheet];
+        
+    });
+    
+    return actionSheetManager;
+}
+
++ (LEEActionSheet *)actionSheet{
+    
+    LEEActionSheet *actionSheet = [[LEEActionSheet alloc]init];
+    
+    return actionSheet;
+}
+
++ (void)closeCustomActionSheet{
+    
+    if ([LEEActionSheet shareActionSheetManager].currentCustomActionSheetDelegate && [[LEEActionSheet shareActionSheetManager].currentCustomActionSheetDelegate respondsToSelector:@selector(customActionSheetCloseDelegate)]) {
+        
+        [[LEEActionSheet shareActionSheetManager].currentCustomActionSheetDelegate customActionSheetCloseDelegate];
+    }
+    
+}
+
+#pragma mark LazyLoading
+
+- (LEEActionSheetSystem *)system{
+    
+    if (!_system) _system = [[LEEActionSheetSystem alloc]init];
+    
+    return _system;
+}
+
+- (LEEActionSheetCustom *)custom{
+    
+    if (!_custom) _custom = [[LEEActionSheetCustom alloc]init];
+    
+    return _custom;
+}
 
 @end
 
@@ -56,14 +107,229 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
 
 @interface LEEActionSheetConfigModel ()
 
+/* 以下为配置模型属性 ╮(╯▽╰)╭ 无视就好 */
 
+@property (nonatomic , copy , readonly ) NSString *modelTitleStr;
+@property (nonatomic , copy , readonly ) NSString *modelContentStr;
+@property (nonatomic , copy , readonly ) NSString *modelCancelButtonTitleStr;
+@property (nonatomic , copy , readonly ) NSString *modelDestructiveButtonTitleStr;
+
+@property (nonatomic , strong ) NSMutableArray *modelButtonArray;
+@property (nonatomic , strong ) NSMutableArray *modelCustomSubViewsQueue;
+
+@property (nonatomic , copy ) void(^modelCancelButtonAction)();
+@property (nonatomic , copy ) void(^modelDestructiveButtonAction)();
+@property (nonatomic , copy ) void(^modelFinishConfig)(UIViewController *vc);
 
 @end
 
 @implementation LEEActionSheetConfigModel
 
+-(void)dealloc{
+    
+    _modelTitleStr = nil;
+    _modelContentStr = nil;
+    _modelCancelButtonTitleStr = nil;
+    _modelButtonArray = nil;
+    _modelCustomSubViewsQueue = nil;
+    
+}
+
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        
+        //初始化默认值
+        
+//        _modelCornerRadius = 10.0f; //默认警示框圆角半径
+//        _modelSubViewMargin = 10.0f; //默认警示框内部控件之间间距
+//        _modelTopSubViewMargin = 20.0f; //默认警示框顶部控件的间距
+//        _modelBottomSubViewMargin = 20.0f; //默认警示框底部控件的间距
+//        _modelAlertMaxWidth = 280; //默认最大宽度 设备最小屏幕宽度 320 去除20左右边距
+//        _modelAlertMaxHeight = CGRectGetHeight([[UIScreen mainScreen] bounds]) * 0.8f; //默认最大高度屏幕80%
+//        _modelAlertOpenAnimationDuration = 0.3f; //默认警示框打开动画时长
+//        _modelAlertCloseAnimationDuration = 0.2f; //默认警示框关闭动画时长
+//        
+//        _modelAlertViewColor = [UIColor whiteColor]; //默认警示框颜色
+//        _modelAlertWindowBackGroundColor = [UIColor blackColor]; //默认警示框背景半透明或者模糊颜色
+//        
+//        _modelIsAlertWindowTouchClose = NO; //默认点击window不关闭
+//        _modelIsCustomButtonClickClose = YES; //默认点击自定义按钮关闭
+//        
+//        _modelAlertCustomBackGroundStype = LEEAlertCustomBackGroundStypeTranslucent; //默认为半透明背景样式
+        
+        
+    }
+    return self;
+}
+
+-(LEEConfigActionSheetToString)LeeTitle{
+    
+    __weak typeof(self) weakSelf = self;
+    
+    return ^(NSString *str){
+        
+        _modelTitleStr = str;
+        
+//        BOOL isAddQueue = YES; //是否加入队列
+//        
+//        for (NSDictionary *item in weakSelf.modelCustomSubViewsQueue) {
+//            
+//            if ([item[@"type"] integerValue] == LEEAlertCustomSubViewTypeTitle) {
+//                
+//                isAddQueue = NO; //已存在 不加入
+//                
+//                break;
+//            }
+//            
+//        }
+//        
+//        if (isAddQueue) [weakSelf.modelCustomSubViewsQueue addObject:@{@"type" : @(LEEAlertCustomSubViewTypeTitle)}];
+        
+        return weakSelf;
+    };
+    
+}
+
+-(LEEConfigActionSheetToString)LeeContent{
+    
+    __weak typeof(self) weakSelf = self;
+    
+    return ^(NSString *str){
+        
+        _modelContentStr = str;
+        
+//        BOOL isAddQueue = YES; //是否加入队列
+//        
+//        for (NSDictionary *item in weakSelf.modelCustomSubViewsQueue) {
+//            
+//            if ([item[@"type"] integerValue] == LEEAlertCustomSubViewTypeContent) {
+//                
+//                isAddQueue = NO; //已存在 不加入
+//                
+//                break;
+//            }
+//            
+//        }
+//        
+//        if (isAddQueue) [weakSelf.modelCustomSubViewsQueue addObject:@{@"type" : @(LEEAlertCustomSubViewTypeContent)}];
+        
+        return weakSelf;
+    };
+    
+}
+
+-(LEEConfigActionSheetToString)LeeCancelButtonTitle{
+    
+    __weak typeof(self) weakSelf = self;
+    
+    return ^(NSString *str){
+        
+        _modelCancelButtonTitleStr = str;
+        
+        return weakSelf;
+    };
+    
+}
+
+-(LEEConfigActionSheetToButtonBlock)LeeCancelButtonAction{
+    
+    __weak typeof(self) weakSelf = self;
+    
+    return ^(void(^buttonAction)()){
+        
+        if (buttonAction) weakSelf.modelCancelButtonAction = buttonAction;
+        
+        return weakSelf;
+    };
+    
+}
+
+-(LEEConfigActionSheetToString)LeeDestructiveButtonTitle{
+    
+    __weak typeof(self) weakSelf = self;
+    
+    return ^(NSString *str){
+        
+        _modelDestructiveButtonTitleStr = str;
+        
+        return weakSelf;
+    };
+    
+}
+
+-(LEEConfigActionSheetToButtonBlock)LeeDestructiveButtonAction{
+    
+    __weak typeof(self) weakSelf = self;
+    
+    return ^(void(^buttonAction)()){
+        
+        if (buttonAction) weakSelf.modelDestructiveButtonAction = buttonAction;
+        
+        return weakSelf;
+    };
+    
+}
+
+-(LEEConfigActionSheetToButtonAndBlock)LeeAddButton{
+    
+    __weak typeof(self) weakSelf = self;
+    
+    return ^(NSString *title , void(^buttonAction)()){
+        
+        [weakSelf.modelButtonArray addObject:@{@"title" : title , @"actionblock" : buttonAction}];
+        
+        return weakSelf;
+    };
+    
+}
 
 
+
+
+
+
+-(LEEConfigActionSheet)LeeShow{
+    
+    __weak typeof(self) weakSelf = self;
+    
+    return ^(){
+        
+        if (weakSelf.modelFinishConfig) weakSelf.modelFinishConfig(nil);
+        
+        return weakSelf;
+    };
+    
+}
+
+-(LEEConfigActionSheetToViewController)LeeShowFromViewController{
+    
+    __weak typeof(self) weakSelf = self;
+    
+    return ^(UIViewController *viewController){
+        
+        if (weakSelf.modelFinishConfig) weakSelf.modelFinishConfig(viewController);
+        
+        return weakSelf;
+    };
+    
+}
+
+#pragma mark LazyLoading
+
+- (NSMutableArray *)modelButtonArray{
+    
+    if (!_modelButtonArray) _modelButtonArray = [NSMutableArray array];
+    
+    return _modelButtonArray;
+}
+-(NSMutableArray *)modelCustomSubViewsQueue{
+    
+    if (!_modelCustomSubViewsQueue) _modelCustomSubViewsQueue = [NSMutableArray array];
+    
+    return _modelCustomSubViewsQueue;
+}
 
 @end
 
@@ -71,11 +337,265 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
 
 @interface LEEActionSheetSystem ()<UIActionSheetDelegate>
 
+@property (nonatomic , strong ) NSMutableDictionary *actionSheetViewButtonIndexDic;
 
 @end
 
 @implementation LEEActionSheetSystem
 
+- (void)dealloc{
+    
+    _config = nil;
+    
+    _actionSheetViewButtonIndexDic = nil;
+}
+
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        
+    }
+    return self;
+}
+
+- (void)configAlertWithShow:(UIViewController *)vc{
+    
+    NSString *title = self.config.modelTitleStr ? self.config.modelTitleStr : nil;
+    
+    NSString *message = self.config.modelContentStr ? self.config.modelContentStr : nil;
+    
+    NSString *cancelButtonTitle = self.config.modelCancelButtonTitleStr || self.config.modelCancelButtonAction ? self.config.modelCancelButtonTitleStr ? self.config.modelCancelButtonTitleStr : @"取消" : nil ;
+    
+    NSString *destructiveButtonTitle = self.config.modelDestructiveButtonTitleStr || self.config.modelDestructiveButtonAction ? self.config.modelDestructiveButtonTitleStr ? self.config.modelDestructiveButtonTitleStr : @"销毁" : nil ;
+    
+    if (iOS8) {
+        
+        __weak typeof(self) weakSelf = self;
+        
+        //使用 UIAlertController
+        
+        UIAlertController *alertController = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleActionSheet];
+        
+        if (cancelButtonTitle) {
+         
+            void (^cancelButtonAction)() = weakSelf.config.modelCancelButtonAction;
+            
+            UIAlertAction *alertAction = [UIAlertAction actionWithTitle:cancelButtonTitle style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+                
+                if (cancelButtonAction) cancelButtonAction();
+                
+            }];
+            
+            [alertController addAction:alertAction];
+            
+        }
+        
+        if (destructiveButtonTitle) {
+            
+            void (^destructiveButtonAction)() = weakSelf.config.modelDestructiveButtonAction;
+            
+            UIAlertAction *alertAction = [UIAlertAction actionWithTitle:destructiveButtonTitle style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
+                
+                if (destructiveButtonAction) destructiveButtonAction();
+                
+            }];
+            
+            [alertController addAction:alertAction];
+            
+        }
+        
+        for (NSDictionary *buttonDic in self.config.modelButtonArray) {
+            
+            NSString *buttonTitle = buttonDic[@"title"];
+            
+            void (^buttonAction)() = buttonDic[@"actionblock"];
+            
+            UIAlertAction *alertAction = [UIAlertAction actionWithTitle:buttonTitle style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                
+                if (buttonAction) buttonAction();
+                
+            }];
+            
+            [alertController addAction:alertAction];
+            
+        }
+        
+        if (vc) {
+            
+            [vc presentViewController:alertController animated:YES completion:^{}];
+            
+        } else {
+            
+            if ([UIApplication sharedApplication].keyWindow.rootViewController) {
+                
+                [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:alertController animated:YES completion:^{}];
+                
+            } else {
+                
+#ifdef LEEDebugWithAssert
+                /*
+                 * keywindow的rootViewController 获取不到 建议传入视图控制器对象
+                 *
+                 * 建议: XXX.system.config.XXX().XXX().showFromViewController(视图控制器对象);
+                 */
+                NSAssert(self, @"LEEAlert : keywindow的rootViewController 获取不到 建议传入视图控制器对象");
+#endif
+                
+            }
+            
+        }
+        
+        //释放模型
+        
+        _config = nil;
+        
+    } else {
+        
+        //使用UIActionSheet
+        
+        if (message) title = [NSString stringWithFormat:@"%@\n\n%@" , title , message];
+        
+        UIActionSheet *actionSheet = nil;
+        
+        //暂时傻逼式无奈处理
+        
+        actionSheet = [self sbHandleActionSheetWithTitle:title CancelButtonTitle:cancelButtonTitle DestructiveButtonTitle:destructiveButtonTitle];
+        
+        [self.config.modelButtonArray enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            
+            NSDictionary *buttonDic = obj;
+            
+            void (^buttonAction)() = buttonDic[@"actionblock"];
+            
+            [self.actionSheetViewButtonIndexDic setValue:buttonAction forKey:[NSString stringWithFormat:@"%ld" , actionSheet.firstOtherButtonIndex + idx]];
+            
+        }];
+        
+        
+        [actionSheet showInView:[UIApplication sharedApplication].keyWindow];
+        
+    }
+    
+    //清空按钮数组
+    
+    [self.config.modelButtonArray removeAllObjects];
+    
+}
+
+- (UIActionSheet *)sbHandleActionSheetWithTitle:(NSString *)title CancelButtonTitle:(NSString *)cancelButtonTitle DestructiveButtonTitle:(NSString *)destructiveButtonTitle{
+    
+    NSArray *array = self.config.modelButtonArray;
+    
+    switch (array.count) {
+        case 0:
+            return [[UIActionSheet alloc]initWithTitle:title delegate:self cancelButtonTitle:cancelButtonTitle destructiveButtonTitle:destructiveButtonTitle otherButtonTitles: nil];
+            break;
+        case 1:
+            return [[UIActionSheet alloc]initWithTitle:title delegate:self cancelButtonTitle:cancelButtonTitle destructiveButtonTitle:destructiveButtonTitle otherButtonTitles:array[0][@"title"], nil];
+            break;
+        case 2:
+            return [[UIActionSheet alloc]initWithTitle:title delegate:self cancelButtonTitle:cancelButtonTitle destructiveButtonTitle:destructiveButtonTitle otherButtonTitles:array[0][@"title"],array[1][@"title"], nil];
+            break;
+        case 3:
+            return [[UIActionSheet alloc]initWithTitle:title delegate:self cancelButtonTitle:cancelButtonTitle destructiveButtonTitle:destructiveButtonTitle otherButtonTitles:array[0][@"title"],array[1][@"title"],array[2][@"title"], nil];
+            break;
+        case 4:
+            return [[UIActionSheet alloc]initWithTitle:title delegate:self cancelButtonTitle:cancelButtonTitle destructiveButtonTitle:destructiveButtonTitle otherButtonTitles:array[0][@"title"],array[1][@"title"],array[2][@"title"],array[3][@"title"], nil];
+            break;
+        case 5:
+            return [[UIActionSheet alloc]initWithTitle:title delegate:self cancelButtonTitle:cancelButtonTitle destructiveButtonTitle:destructiveButtonTitle otherButtonTitles:array[0][@"title"],array[1][@"title"],array[2][@"title"],array[3][@"title"],array[4][@"title"], nil];
+            break;
+        case 6:
+            return [[UIActionSheet alloc]initWithTitle:title delegate:self cancelButtonTitle:cancelButtonTitle destructiveButtonTitle:destructiveButtonTitle otherButtonTitles:array[0][@"title"],array[1][@"title"],array[2][@"title"],array[3][@"title"],array[4][@"title"],array[5][@"title"], nil];
+            break;
+        case 7:
+            return [[UIActionSheet alloc]initWithTitle:title delegate:self cancelButtonTitle:cancelButtonTitle destructiveButtonTitle:destructiveButtonTitle otherButtonTitles:array[0][@"title"],array[1][@"title"],array[2][@"title"],array[3][@"title"],array[4][@"title"],array[5][@"title"],array[6][@"title"], nil];
+            break;
+        case 8:
+            return [[UIActionSheet alloc]initWithTitle:title delegate:self cancelButtonTitle:cancelButtonTitle destructiveButtonTitle:destructiveButtonTitle otherButtonTitles:array[0][@"title"],array[1][@"title"],array[2][@"title"],array[3][@"title"],array[4][@"title"],array[5][@"title"],array[6][@"title"],array[7][@"title"], nil];
+            break;
+        case 9:
+            return [[UIActionSheet alloc]initWithTitle:title delegate:self cancelButtonTitle:cancelButtonTitle destructiveButtonTitle:destructiveButtonTitle otherButtonTitles:array[0][@"title"],array[1][@"title"],array[2][@"title"],array[3][@"title"],array[4][@"title"],array[5][@"title"],array[6][@"title"],array[7][@"title"],array[8][@"title"], nil];
+            break;
+        case 10:
+            return [[UIActionSheet alloc]initWithTitle:title delegate:self cancelButtonTitle:cancelButtonTitle destructiveButtonTitle:destructiveButtonTitle otherButtonTitles:array[0][@"title"],array[1][@"title"],array[2][@"title"],array[3][@"title"],array[4][@"title"],array[5][@"title"],array[6][@"title"],array[7][@"title"],array[8][@"title"],array[9][@"title"], nil];
+            break;
+        default:
+            return [[UIActionSheet alloc]initWithTitle:title delegate:self cancelButtonTitle:cancelButtonTitle destructiveButtonTitle:destructiveButtonTitle otherButtonTitles: nil];
+            break;
+    }
+    
+    return nil;
+    
+}
+
+#pragma mark UIActionSheetDelegate
+
+- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex{
+    
+    if (buttonIndex == actionSheet.cancelButtonIndex) {
+        
+        if (self.config.modelCancelButtonAction) self.config.modelCancelButtonAction();
+        
+    } else if (buttonIndex == actionSheet.destructiveButtonIndex) {
+        
+        if (self.config.modelDestructiveButtonAction) self.config.modelDestructiveButtonAction();
+        
+    } else {
+     
+        void (^buttonAction)() = self.actionSheetViewButtonIndexDic[[NSString stringWithFormat:@"%ld" , buttonIndex]];
+        
+        if (buttonAction) buttonAction();
+        
+    }
+
+}
+
+- (void)actionSheet:(UIActionSheet *)actionSheet didDismissWithButtonIndex:(NSInteger)buttonIndex{
+    
+    //清空UIAlertView按钮下标字典
+    
+    [self.actionSheetViewButtonIndexDic removeAllObjects];
+    
+    //延迟释放模型 防止循环引用
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1f * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        
+        _config = nil;
+    });
+    
+}
+
+#pragma mark LazyLoading
+
+- (LEEActionSheetConfigModel *)config{
+    
+    if (!_config) {
+        
+        _config = [[LEEActionSheetConfigModel alloc]init];
+        
+        __weak typeof(self) weakSelf = self;
+        
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        
+        _config.modelFinishConfig = ^(UIViewController *vc){
+            
+            [strongSelf configAlertWithShow:vc];
+        };
+        
+    }
+    
+    return _config;
+    
+}
+
+-(NSMutableDictionary *)actionSheetViewButtonIndexDic{
+    
+    if (!_actionSheetViewButtonIndexDic) _actionSheetViewButtonIndexDic = [NSMutableDictionary dictionary];
+    
+    return _actionSheetViewButtonIndexDic;
+}
 
 
 @end
@@ -99,8 +619,6 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
 static NSString * const LEEActionSheetShowNotification = @"LEEActionSheetShowNotification";
 
 @implementation LEEActionSheetCustom
-
-
 
 
 

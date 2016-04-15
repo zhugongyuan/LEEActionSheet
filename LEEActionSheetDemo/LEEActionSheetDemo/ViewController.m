@@ -12,7 +12,9 @@
 
 #import "ViewController.h"
 
-@interface ViewController ()
+#import "LEEActionSheet.h"
+
+@interface ViewController ()<UIActionSheetDelegate>
 
 
 @end
@@ -93,6 +95,8 @@
     
     [self.view addSubview:button5];
     
+    
+    
 }
 
 - (void)didReceiveMemoryWarning {
@@ -104,31 +108,122 @@
 
 - (void)button1Action{
     
+    //带一个取消按钮的ActionSheet
+    
+    [LEEActionSheet actionSheet].system.config
+    .LeeCancelButtonTitle(@"取消")
+    .LeeCancelButtonAction(^(){
+        
+        NSLog(@"点击了取消按钮");
+        
+    })
+    .LeeShow();
+
     
 }
 
 - (void)button2Action{
     
+    //带一个取消按钮和标题内容的ActionSheet
+    
+    [LEEActionSheet actionSheet].system.config
+    .LeeTitle(@"标题")
+    .LeeContent(@"内容")
+    .LeeCancelButtonTitle(@"取消")
+    .LeeCancelButtonAction(^(){
+        
+        NSLog(@"点击了取消按钮");
+        
+    })
+    .LeeShow();
     
 }
 
 
 - (void)button3Action{
     
+    //带一个取消按钮和一个销毁按钮的ActionSheet
+    
+    [LEEActionSheet actionSheet].system.config
+    .LeeCancelButtonTitle(@"取消")
+    .LeeCancelButtonAction(^(){
+        
+        NSLog(@"点击了取消按钮");
+        
+    })
+    .LeeDestructiveButtonAction(^(){
+        
+        NSLog(@"点击了销毁按钮");
+        
+    })
+    .LeeShow();
     
 }
 
 
 - (void)button4Action{
     
+    //带一个取消按钮和一个销毁按钮还有一个其他按钮的ActionSheet
+    
+    [LEEActionSheet actionSheet].system.config
+    .LeeCancelButtonTitle(@"取消")
+    .LeeCancelButtonAction(^(){
+        
+        NSLog(@"点击了取消按钮");
+        
+    })
+    .LeeDestructiveButtonAction(^(){
+        
+        NSLog(@"点击了销毁按钮");
+        
+    })
+    .LeeAddButton(@"按钮1" , ^(){
+        
+        NSLog(@"点击了按钮1");
+        
+    })
+    .LeeShowFromViewController(self);
     
 }
 
+
 - (void)button5Action{
     
+    //带一个取消按钮和一个销毁按钮还有多个其他按钮以及标题内容的ActionSheet
     
+    [LEEActionSheet actionSheet].system.config
+    .LeeTitle(@"标题")
+    .LeeContent(@"内容")
+    .LeeCancelButtonTitle(@"取消")
+    .LeeCancelButtonAction(^(){
+        
+        NSLog(@"点击了取消按钮");
+        
+    })
+    .LeeDestructiveButtonAction(^(){
+        
+        NSLog(@"点击了销毁按钮");
+        
+    })
+    .LeeAddButton(@"按钮1" , ^(){
+        
+        NSLog(@"点击了按钮1");
+        
+    })
+    .LeeAddButton(@"按钮2" , ^(){
+        
+        NSLog(@"点击了按钮2");
+        
+    })
+    .LeeAddButton(@"按钮3" , ^(){
+        
+        NSLog(@"点击了按钮3");
+        
+    })
+    .LeeShow(); //或.LeeShowFromViewController(self);
     
 }
+
 
 @end
 

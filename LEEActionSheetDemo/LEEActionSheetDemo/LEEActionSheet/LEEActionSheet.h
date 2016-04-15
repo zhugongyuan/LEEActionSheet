@@ -105,14 +105,21 @@ typedef LEEActionSheetConfigModel *(^LEEConfigActionSheetToViewController)(UIVie
 @property (nonatomic , copy , readonly ) LEEConfigActionSheetToString LeeCancelButtonTitle;
 /** 设置 ActionSheet 取消按钮响应事件Block -> 格式: .LeeCancelButtonAction(^(){ //code.. }) */
 @property (nonatomic , copy , readonly ) LEEConfigActionSheetToButtonBlock LeeCancelButtonAction;
+/** 设置 ActionSheet 销毁按钮标题 -> 格式: .LeeDestructiveButtonTitle(@@"") */
+@property (nonatomic , copy , readonly ) LEEConfigActionSheetToString LeeDestructiveButtonTitle;
+/** 设置 ActionSheet 销毁按钮响应事件Block -> 格式: .LeeDestructiveButtonAction(^(){ //code.. }) */
+@property (nonatomic , copy , readonly ) LEEConfigActionSheetToButtonBlock LeeDestructiveButtonAction;
 /** 设置 ActionSheet 添加按钮 -> 格式: .LeeAddButton(@@"" , ^(){ //code.. }) */
 @property (nonatomic , copy , readonly ) LEEConfigActionSheetToButtonAndBlock LeeAddButton;
-/** 设置 ActionSheet 添加输入框 -> 格式: .LeeAddTextField(^(UITextField *textField){ //code.. }) */
-@property (nonatomic , copy , readonly ) LEEConfigActionSheetToCustomTextField LeeAddTextField;
 
 /* Alert 自定义设置 */
 
 
+
+/** 显示 Alert 默认通过KeyWindow弹出 -> 格式: .LeeShow() */
+@property (nonatomic , copy , readonly ) LEEConfigActionSheet LeeShow;
+/** 显示 ActionSheet 通过指定视图控制器弹出 (仅适用系统类型)  -> 格式: .LeeShowFromViewController(UIViewController) */
+@property (nonatomic , copy , readonly ) LEEConfigActionSheetToViewController LeeShowFromViewController;
 
 @end
 

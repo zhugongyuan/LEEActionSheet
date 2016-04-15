@@ -1,45 +1,116 @@
+
 /*!
  *  @header LEEActionSheet.m
- *          LEEActionSheetDemo
+ *
  *
  *  @brief  操作表
  *
  *  @author 李响
  *  @copyright    Copyright © 2016年 lee. All rights reserved.
- *  @version    16/4/15.
+ *  @version    1.0
  */
 
-
 #import "LEEActionSheet.h"
-
-#import <objc/runtime.h>
 
 #import <Accelerate/Accelerate.h>
 
 #define iOS8 ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0)
 
+@interface LEEActionSheet ()
 
-@implementation LEEActionSheet
+@property (nonatomic , weak ) id currentCustomAlertDelegate;
 
 @end
 
+@protocol LEEActionSheetManagerDelegate <NSObject>
+
+- (void)customActionSheetCloseDelegate;
+
+@end
+
+@implementation LEEActionSheet
+
+
+
+@end
+
+#pragma mark - ===================配置模型===================
+
+typedef NS_ENUM(NSInteger, LEEActionSheetCustomBackGroundStype) {
+    /** 自定义背景样式 模糊 */
+    LEEActionSheetCustomBackGroundStypeBlur,
+    /** 自定义背景样式 半透明 */
+    LEEActionSheetCustomBackGroundStypeTranslucent,
+};
+
+typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
+    /** 自定义子视图类型 标题 */
+    LEEActionSheetCustomSubViewTypeTitle,
+    /** 自定义子视图类型 内容 */
+    LEEActionSheetCustomSubViewTypeContent,
+    /** 自定义子视图类型 输入框 */
+    LEEActionSheetCustomSubViewTypeTextField,
+    /** 自定义子视图类型 自定义视图 */
+    LEEActionSheetCustomSubViewTypeCustomView,
+};
+
+@interface LEEActionSheetConfigModel ()
+
+
+
+@end
+
+@implementation LEEActionSheetConfigModel
+
+
+
+
+@end
+
+#pragma mark - =====================系统=====================
+
+@interface LEEActionSheetSystem ()<UIActionSheetDelegate>
+
+
+@end
+
+@implementation LEEActionSheetSystem
+
+
+
+@end
+
+#pragma mark - ====================自定义====================
+
+@interface LEEActionSheetCustom ()
+
+@property (nonatomic , strong ) UIWindow *currentKeyWindow;
+
+@property (nonatomic , strong ) UIWindow *actionSheetWindow;
+
+@property (nonatomic , strong ) UIImageView *actionSheetWindowImageView;
+
+@property (nonatomic , strong ) UIScrollView *actionSheetView;
+
+@property (nonatomic , strong ) NSMutableArray *actionSheetButtonArray;
+
+@end
+
+static NSString * const LEEActionSheetShowNotification = @"LEEActionSheetShowNotification";
+
+@implementation LEEActionSheetCustom
 
 
 
 
 
-
-
-
-
-
-
+@end
 
 
 #pragma mark - ====================工具类====================
 
 
-@implementation UIImage (LEEAlertImageEffects)
+@implementation UIImage (LEEActionSheetImageEffects)
 
 -(UIImage*)LeeActionSheet_ApplyLightEffect {
     

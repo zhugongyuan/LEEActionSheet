@@ -322,7 +322,7 @@
         
     })
     .LeeCustomCornerRadius(15.0f)  //设置自定义ActionSheet的圆角半径 默认为 15
-    .LeeCustomActionSheetMaxWidth(300)   //设置自定义ActionSheet的最大宽度 默认为 300 (也就是最小设备屏幕宽度 320 去除两边10的间距)
+    .LeeCustomActionSheetMaxWidth(CGRectGetWidth([[UIScreen mainScreen] bounds]) - 20.0f)   //设置自定义ActionSheet的最大宽度 默认为屏幕宽度减20左右边距
     .LeeCustomActionSheetMaxHeight(CGRectGetHeight([[UIScreen mainScreen] bounds]) - 20.0f)   //设置自定义ActionSheet的最大高度 默认为屏幕高度减20上下边距
     .LeeCustomSubViewMargin(10.0f)  //设置自定义ActionSheet的子控件上下边距 默认为 10
     .LeeCustomTopSubViewMargin(20.0f)   //设置自定义ActionSheet的第一个子控件距离ActionSheet上边缘的边距 默认 20

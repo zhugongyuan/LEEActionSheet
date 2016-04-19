@@ -177,7 +177,7 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
         _modelBottomSubViewMargin = 20.0f; //默认ActionSheet底部距离控件的间距
         _modelLeftSubViewMargin = 10.0f; //默认ActionSheet左侧距离控件的间距
         _modelRightSubViewMargin = 10.0f; //默认ActionSheet右侧距离控件的间距
-        _modelActionSheetMaxWidth = 300; //默认最大宽度 设备最小屏幕宽度 320 去除10左右边距
+        _modelActionSheetMaxWidth = CGRectGetWidth([[UIScreen mainScreen] bounds]) - 20; //默认最大宽度屏幕宽度减20 (去除左右10间距)
         _modelActionSheetMaxHeight = CGRectGetHeight([[UIScreen mainScreen] bounds]) - 20; //默认最大高度屏幕高度减20 (去除上下10间距)
         _modelActionSheetOpenAnimationDuration = 0.3f; //默认ActionSheet打开动画时长
         _modelActionSheetCloseAnimationDuration = 0.2f; //默认ActionSheet关闭动画时长

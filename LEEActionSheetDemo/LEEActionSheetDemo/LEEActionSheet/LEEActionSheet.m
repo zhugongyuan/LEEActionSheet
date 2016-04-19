@@ -3,11 +3,11 @@
  *  @header LEEActionSheet.m
  *
  *
- *  @brief  操作表
+ *  @brief  操作列表
  *
- *  @author 李响
+ *  @author LEE
  *  @copyright    Copyright © 2016年 lee. All rights reserved.
- *  @version    1.0
+ *  @version    V1.0
  */
 
 #import "LEEActionSheet.h"
@@ -19,6 +19,8 @@
 @interface LEEActionSheet ()
 
 @property (nonatomic , weak ) id currentCustomActionSheetDelegate;
+
+@property (nonatomic , strong ) UIWindow *mainWindow;
 
 @end
 
@@ -35,7 +37,6 @@
     _system = nil;
     
     _custom = nil;
-    
 }
 
 + (LEEActionSheet *)shareActionSheetManager{
@@ -56,6 +57,11 @@
     LEEActionSheet *actionSheet = [[LEEActionSheet alloc]init];
     
     return actionSheet;
+}
+
++(void)configMainWindow:(UIWindow *)window{
+    
+    if (window) [LEEActionSheet shareActionSheetManager].mainWindow = window;
 }
 
 + (void)closeCustomActionSheet{
@@ -99,8 +105,6 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
     LEEActionSheetCustomSubViewTypeTitle,
     /** 自定义子视图类型 内容 */
     LEEActionSheetCustomSubViewTypeContent,
-    /** 自定义子视图类型 输入框 */
-    LEEActionSheetCustomSubViewTypeTextField,
     /** 自定义子视图类型 自定义视图 */
     LEEActionSheetCustomSubViewTypeCustomView,
 };
@@ -117,9 +121,32 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
 @property (nonatomic , strong ) NSMutableArray *modelButtonArray;
 @property (nonatomic , strong ) NSMutableArray *modelCustomSubViewsQueue;
 
+@property (nonatomic , strong , readonly ) UIView *modelCustomContentView;
+
+@property (nonatomic , assign , readonly ) CGFloat modelCornerRadius;
+@property (nonatomic , assign , readonly ) CGFloat modelSubViewMargin;
+@property (nonatomic , assign , readonly ) CGFloat modelTopSubViewMargin;
+@property (nonatomic , assign , readonly ) CGFloat modelBottomSubViewMargin;
+@property (nonatomic , assign , readonly ) CGFloat modelLeftSubViewMargin;
+@property (nonatomic , assign , readonly ) CGFloat modelRightSubViewMargin;
+@property (nonatomic , assign , readonly ) CGFloat modelActionSheetMaxWidth;
+@property (nonatomic , assign , readonly ) CGFloat modelActionSheetMaxHeight;
+@property (nonatomic , assign , readonly ) CGFloat modelActionSheetOpenAnimationDuration;
+@property (nonatomic , assign , readonly ) CGFloat modelActionSheetCloseAnimationDuration;
+
+@property (nonatomic , strong , readonly ) UIColor *modelActionSheetViewColor;
+@property (nonatomic , strong , readonly ) UIColor *modelActionSheetWindowBackGroundColor;
+
+@property (nonatomic , assign , readonly ) BOOL modelIsActionSheetWindowTouchClose;
+@property (nonatomic , assign , readonly ) BOOL modelIsCustomButtonClickClose;
+
 @property (nonatomic , copy ) void(^modelCancelButtonAction)();
 @property (nonatomic , copy ) void(^modelDestructiveButtonAction)();
+@property (nonatomic , copy ) void(^modelCancelButtonBlock)(UIButton *button);
+@property (nonatomic , copy ) void(^modelDestructiveButtonBlock)(UIButton *button);
 @property (nonatomic , copy ) void(^modelFinishConfig)(UIViewController *vc);
+
+@property (nonatomic , assign , readonly ) LEEActionSheetCustomBackGroundStype modelActionSheetCustomBackGroundStype;
 
 @end
 
@@ -132,7 +159,9 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
     _modelCancelButtonTitleStr = nil;
     _modelButtonArray = nil;
     _modelCustomSubViewsQueue = nil;
-    
+    _modelCustomContentView = nil;
+    _modelActionSheetViewColor = nil;
+    _modelActionSheetWindowBackGroundColor = nil;
 }
 
 - (instancetype)init
@@ -142,24 +171,24 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
         
         //初始化默认值
         
-//        _modelCornerRadius = 10.0f; //默认警示框圆角半径
-//        _modelSubViewMargin = 10.0f; //默认警示框内部控件之间间距
-//        _modelTopSubViewMargin = 20.0f; //默认警示框顶部控件的间距
-//        _modelBottomSubViewMargin = 20.0f; //默认警示框底部控件的间距
-//        _modelAlertMaxWidth = 280; //默认最大宽度 设备最小屏幕宽度 320 去除20左右边距
-//        _modelAlertMaxHeight = CGRectGetHeight([[UIScreen mainScreen] bounds]) * 0.8f; //默认最大高度屏幕80%
-//        _modelAlertOpenAnimationDuration = 0.3f; //默认警示框打开动画时长
-//        _modelAlertCloseAnimationDuration = 0.2f; //默认警示框关闭动画时长
-//        
-//        _modelAlertViewColor = [UIColor whiteColor]; //默认警示框颜色
-//        _modelAlertWindowBackGroundColor = [UIColor blackColor]; //默认警示框背景半透明或者模糊颜色
-//        
-//        _modelIsAlertWindowTouchClose = NO; //默认点击window不关闭
-//        _modelIsCustomButtonClickClose = YES; //默认点击自定义按钮关闭
-//        
-//        _modelAlertCustomBackGroundStype = LEEAlertCustomBackGroundStypeTranslucent; //默认为半透明背景样式
+        _modelCornerRadius = 12.0f; //默认ActionSheet圆角半径
+        _modelSubViewMargin = 10.0f; //默认ActionSheet内部控件之间间距
+        _modelTopSubViewMargin = 20.0f; //默认ActionSheet顶部距离控件的间距
+        _modelBottomSubViewMargin = 20.0f; //默认ActionSheet底部距离控件的间距
+        _modelLeftSubViewMargin = 10.0f; //默认ActionSheet左侧距离控件的间距
+        _modelRightSubViewMargin = 10.0f; //默认ActionSheet右侧距离控件的间距
+        _modelActionSheetMaxWidth = 300; //默认最大宽度 设备最小屏幕宽度 320 去除10左右边距
+        _modelActionSheetMaxHeight = CGRectGetHeight([[UIScreen mainScreen] bounds]) - 20; //默认最大高度屏幕高度减20 (去除上下10间距)
+        _modelActionSheetOpenAnimationDuration = 0.3f; //默认ActionSheet打开动画时长
+        _modelActionSheetCloseAnimationDuration = 0.2f; //默认ActionSheet关闭动画时长
         
+        _modelActionSheetViewColor = [UIColor whiteColor]; //默认ActionSheet颜色
+        _modelActionSheetWindowBackGroundColor = [UIColor blackColor]; //默认ActionSheet背景半透明或者模糊颜色
         
+        _modelIsActionSheetWindowTouchClose = NO; //默认点击window不关闭
+        _modelIsCustomButtonClickClose = YES; //默认点击自定义按钮关闭
+        
+        _modelActionSheetCustomBackGroundStype = LEEActionSheetCustomBackGroundStypeTranslucent; //默认为半透明背景样式
     }
     return self;
 }
@@ -172,20 +201,11 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
         
         _modelTitleStr = str;
         
-//        BOOL isAddQueue = YES; //是否加入队列
-//        
-//        for (NSDictionary *item in weakSelf.modelCustomSubViewsQueue) {
-//            
-//            if ([item[@"type"] integerValue] == LEEAlertCustomSubViewTypeTitle) {
-//                
-//                isAddQueue = NO; //已存在 不加入
-//                
-//                break;
-//            }
-//            
-//        }
-//        
-//        if (isAddQueue) [weakSelf.modelCustomSubViewsQueue addObject:@{@"type" : @(LEEAlertCustomSubViewTypeTitle)}];
+        //是否加入队列
+        
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"type == %ld" , LEEActionSheetCustomSubViewTypeTitle];
+        
+        if ([weakSelf.modelCustomSubViewsQueue filteredArrayUsingPredicate:predicate].count == 0) [weakSelf.modelCustomSubViewsQueue addObject:@{@"type" : @(LEEActionSheetCustomSubViewTypeTitle)}];
         
         return weakSelf;
     };
@@ -200,20 +220,11 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
         
         _modelContentStr = str;
         
-//        BOOL isAddQueue = YES; //是否加入队列
-//        
-//        for (NSDictionary *item in weakSelf.modelCustomSubViewsQueue) {
-//            
-//            if ([item[@"type"] integerValue] == LEEAlertCustomSubViewTypeContent) {
-//                
-//                isAddQueue = NO; //已存在 不加入
-//                
-//                break;
-//            }
-//            
-//        }
-//        
-//        if (isAddQueue) [weakSelf.modelCustomSubViewsQueue addObject:@{@"type" : @(LEEAlertCustomSubViewTypeContent)}];
+        //是否加入队列
+        
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"type == %ld" , LEEActionSheetCustomSubViewTypeContent];
+        
+        if ([weakSelf.modelCustomSubViewsQueue filteredArrayUsingPredicate:predicate].count == 0) [weakSelf.modelCustomSubViewsQueue addObject:@{@"type" : @(LEEActionSheetCustomSubViewTypeContent)}];
         
         return weakSelf;
     };
@@ -285,9 +296,333 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
     
 }
 
+-(LEEConfigActionSheetToCustomLabel)LeeCustomTitle{
+    
+    __weak typeof(self) weakSelf = self;
+    
+    return ^(void(^addLabel)(UILabel *label)){
+        
+        NSDictionary *customSubViewInfo = @{@"type" : @(LEEActionSheetCustomSubViewTypeTitle) , @"block" : addLabel};
+        
+        if (_modelTitleStr) {
+            
+            for (NSDictionary *item in weakSelf.modelCustomSubViewsQueue) {
+                
+                if ([item[@"type"] integerValue] == LEEActionSheetCustomSubViewTypeTitle) {
+                    
+                    [weakSelf.modelCustomSubViewsQueue replaceObjectAtIndex:[weakSelf.modelCustomSubViewsQueue indexOfObject:item] withObject:customSubViewInfo];
+                    
+                    break;
+                }
+                
+            }
+            
+        } else {
+            
+            [weakSelf.modelCustomSubViewsQueue addObject:customSubViewInfo];
+        }
+        
+        return weakSelf;
+    };
+    
+}
 
+-(LEEConfigActionSheetToCustomLabel)LeeCustomContent{
+    
+    __weak typeof(self) weakSelf = self;
+    
+    return ^(void(^addLabel)(UILabel *label)){
+        
+        NSDictionary *customSubViewInfo = @{@"type" : @(LEEActionSheetCustomSubViewTypeContent) , @"block" : addLabel};
+        
+        if (_modelContentStr) {
+            
+            for (NSDictionary *item in weakSelf.modelCustomSubViewsQueue) {
+                
+                if ([item[@"type"] integerValue] == LEEActionSheetCustomSubViewTypeContent) {
+                    
+                    [weakSelf.modelCustomSubViewsQueue replaceObjectAtIndex:[weakSelf.modelCustomSubViewsQueue indexOfObject:item] withObject:customSubViewInfo];
+                    
+                    break;
+                }
+                
+            }
+            
+        } else {
+            
+            [weakSelf.modelCustomSubViewsQueue addObject:customSubViewInfo];
+        }
+        
+        return weakSelf;
+    };
+    
+}
 
+-(LEEConfigActionSheetToCustomButton)LeeCustomCancelButton{
+    
+    __weak typeof(self) weakSelf = self;
+    
+    return ^(void(^addButton)(UIButton *button)){
+        
+        if (addButton) weakSelf.modelCancelButtonBlock = addButton;
+        
+        return weakSelf;
+    };
+    
+}
 
+-(LEEConfigActionSheetToCustomButton)LeeCustomDestructiveButton{
+    
+    __weak typeof(self) weakSelf = self;
+    
+    return ^(void(^addButton)(UIButton *button)){
+        
+        if (addButton) weakSelf.modelDestructiveButtonBlock = addButton;
+        
+        return weakSelf;
+    };
+    
+}
+
+-(LEEConfigActionSheetToView)LeeCustomView{
+    
+    __weak typeof(self) weakSelf = self;
+    
+    return ^(UIView *view){
+        
+        _modelCustomContentView = view;
+        
+        //是否加入队列
+        
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"type == %ld" , LEEActionSheetCustomSubViewTypeCustomView];
+        
+        if ([weakSelf.modelCustomSubViewsQueue filteredArrayUsingPredicate:predicate].count == 0) [weakSelf.modelCustomSubViewsQueue addObject:@{@"type" : @(LEEActionSheetCustomSubViewTypeCustomView)}];
+        
+        return weakSelf;
+    };
+    
+}
+
+-(LEEConfigActionSheetToCustomButton)LeeAddCustomButton{
+    
+    __weak typeof(self) weakSelf = self;
+    
+    return ^(void(^addButton)(UIButton *button)){
+        
+        [weakSelf.modelButtonArray addObject:@{@"title" : @"按钮" , @"block" : addButton}];
+        
+        return weakSelf;
+    };
+    
+}
+
+-(LEEConfigActionSheetToFloat)LeeCustomCornerRadius{
+    
+    __weak typeof(self) weakSelf = self;
+    
+    return ^(CGFloat number){
+        
+        _modelCornerRadius = number;
+        
+        return weakSelf;
+    };
+    
+}
+
+-(LEEConfigActionSheetToFloat)LeeCustomSubViewMargin{
+    
+    __weak typeof(self) weakSelf = self;
+    
+    return ^(CGFloat number){
+        
+        _modelSubViewMargin = number;
+        
+        return weakSelf;
+    };
+    
+}
+
+-(LEEConfigActionSheetToFloat)LeeCustomTopSubViewMargin{
+    
+    __weak typeof(self) weakSelf = self;
+    
+    return ^(CGFloat number){
+        
+        _modelTopSubViewMargin = number;
+        
+        return weakSelf;
+    };
+    
+}
+
+-(LEEConfigActionSheetToFloat)LeeCustomBottomSubViewMargin{
+    
+    __weak typeof(self) weakSelf = self;
+    
+    return ^(CGFloat number){
+        
+        _modelBottomSubViewMargin = number;
+        
+        return weakSelf;
+    };
+    
+}
+
+-(LEEConfigActionSheetToFloat)LeeCustomLeftSubViewMargin{
+    
+    __weak typeof(self) weakSelf = self;
+    
+    return ^(CGFloat number){
+        
+        _modelLeftSubViewMargin = number;
+        
+        return weakSelf;
+    };
+    
+}
+
+-(LEEConfigActionSheetToFloat)LeeCustomRightSubViewMargin{
+    
+    __weak typeof(self) weakSelf = self;
+    
+    return ^(CGFloat number){
+        
+        _modelRightSubViewMargin = number;
+        
+        return weakSelf;
+    };
+    
+}
+
+-(LEEConfigActionSheetToFloat)LeeCustomActionSheetMaxWidth{
+    
+    __weak typeof(self) weakSelf = self;
+    
+    return ^(CGFloat number){
+        
+        _modelActionSheetMaxWidth = number;
+        
+        return weakSelf;
+    };
+    
+}
+
+-(LEEConfigActionSheetToFloat)LeeCustomActionSheetMaxHeight{
+    
+    __weak typeof(self) weakSelf = self;
+    
+    return ^(CGFloat number){
+        
+        _modelActionSheetMaxHeight = number;
+        
+        return weakSelf;
+    };
+    
+}
+
+-(LEEConfigActionSheetToFloat)LeeCustomActionSheetOpenAnimationDuration{
+    
+    __weak typeof(self) weakSelf = self;
+    
+    return ^(CGFloat number){
+        
+        _modelActionSheetOpenAnimationDuration = number;
+        
+        return weakSelf;
+    };
+    
+}
+
+-(LEEConfigActionSheetToFloat)LeeCustomActionSheetCloseAnimationDuration{
+    
+    __weak typeof(self) weakSelf = self;
+    
+    return ^(CGFloat number){
+        
+        _modelActionSheetCloseAnimationDuration = number;
+        
+        return weakSelf;
+    };
+    
+}
+
+-(LEEConfigActionSheetToColor)LeeCustomActionSheetViewColor{
+    
+    __weak typeof(self) weakSelf = self;
+    
+    return ^(UIColor *color){
+        
+        _modelActionSheetViewColor = color;
+        
+        return weakSelf;
+    };
+    
+}
+
+-(LEEConfigActionSheetToColor)LeeCustomActionSheetViewBackGroundColor{
+    
+    __weak typeof(self) weakSelf = self;
+    
+    return ^(UIColor *color){
+        
+        _modelActionSheetWindowBackGroundColor = color;
+        
+        return weakSelf;
+    };
+    
+}
+
+-(LEEConfigActionSheet)LeeCustomActionSheetViewBackGroundStypeTranslucent{
+    
+    __weak typeof(self) weakSelf = self;
+    
+    return ^(){
+        
+        _modelActionSheetCustomBackGroundStype = LEEActionSheetCustomBackGroundStypeTranslucent;
+        
+        return weakSelf;
+    };
+    
+}
+
+-(LEEConfigActionSheet)LeeCustomActionSheetViewBackGroundStypeBlur{
+    
+    __weak typeof(self) weakSelf = self;
+    
+    return ^(){
+        
+        _modelActionSheetCustomBackGroundStype = LEEActionSheetCustomBackGroundStypeBlur;
+        
+        return weakSelf;
+    };
+    
+}
+
+-(LEEConfigActionSheet)LeeCustomActionSheetTouchClose{
+    
+    __weak typeof(self) weakSelf = self;
+    
+    return ^(){
+        
+        _modelIsActionSheetWindowTouchClose = YES;
+        
+        return weakSelf;
+    };
+    
+}
+
+-(LEEConfigActionSheet)LeeCustomButtonClickNotClose{
+    
+    __weak typeof(self) weakSelf = self;
+    
+    return ^(){
+        
+        _modelIsCustomButtonClickClose = NO;
+        
+        return weakSelf;
+    };
+    
+}
 
 
 -(LEEConfigActionSheet)LeeShow{
@@ -359,7 +694,7 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
     return self;
 }
 
-- (void)configAlertWithShow:(UIViewController *)vc{
+- (void)configActionSheetWithShow:(UIViewController *)vc{
     
     NSString *title = self.config.modelTitleStr ? self.config.modelTitleStr : nil;
     
@@ -388,7 +723,6 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
             }];
             
             [alertController addAction:alertAction];
-            
         }
         
         if (destructiveButtonTitle) {
@@ -402,7 +736,6 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
             }];
             
             [alertController addAction:alertAction];
-            
         }
         
         for (NSDictionary *buttonDic in self.config.modelButtonArray) {
@@ -418,7 +751,6 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
             }];
             
             [alertController addAction:alertAction];
-            
         }
         
         if (vc) {
@@ -433,15 +765,12 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
                 
             } else {
                 
-#ifdef LEEDebugWithAssert
                 /*
                  * keywindow的rootViewController 获取不到 建议传入视图控制器对象
                  *
                  * 建议: XXX.system.config.XXX().XXX().showFromViewController(视图控制器对象);
                  */
-                NSAssert(self, @"LEEAlert : keywindow的rootViewController 获取不到 建议传入视图控制器对象");
-#endif
-                
+                NSAssert(self, @"LEEActionSheet : keywindow的rootViewController 获取不到 建议传入视图控制器对象");
             }
             
         }
@@ -458,7 +787,7 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
         
         UIActionSheet *actionSheet = nil;
         
-        //暂时傻逼式无奈处理
+        //暂时傻逼式无奈处理 动态参数传递搞不定啊
         
         actionSheet = [self sbHandleActionSheetWithTitle:title CancelButtonTitle:cancelButtonTitle DestructiveButtonTitle:destructiveButtonTitle];
         
@@ -472,15 +801,12 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
             
         }];
         
-        
         [actionSheet showInView:[UIApplication sharedApplication].keyWindow];
-        
     }
     
     //清空按钮数组
     
     [self.config.modelButtonArray removeAllObjects];
-    
 }
 
 - (UIActionSheet *)sbHandleActionSheetWithTitle:(NSString *)title CancelButtonTitle:(NSString *)cancelButtonTitle DestructiveButtonTitle:(NSString *)destructiveButtonTitle{
@@ -527,7 +853,6 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
     }
     
     return nil;
-    
 }
 
 #pragma mark UIActionSheetDelegate
@@ -547,14 +872,13 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
         void (^buttonAction)() = self.actionSheetViewButtonIndexDic[[NSString stringWithFormat:@"%ld" , buttonIndex]];
         
         if (buttonAction) buttonAction();
-        
     }
 
 }
 
 - (void)actionSheet:(UIActionSheet *)actionSheet didDismissWithButtonIndex:(NSInteger)buttonIndex{
     
-    //清空UIAlertView按钮下标字典
+    //清空UIActionSheet按钮下标字典
     
     [self.actionSheetViewButtonIndexDic removeAllObjects];
     
@@ -581,7 +905,7 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
         
         _config.modelFinishConfig = ^(UIViewController *vc){
             
-            [strongSelf configAlertWithShow:vc];
+            [strongSelf configActionSheetWithShow:vc];
         };
         
     }
@@ -597,22 +921,673 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
     return _actionSheetViewButtonIndexDic;
 }
 
-
 @end
 
 #pragma mark - ====================自定义====================
 
-@interface LEEActionSheetCustom ()
+@interface LEEActionSheetViewController ()
+
+@property (nonatomic , weak ) LEEActionSheetConfigModel *config;
+
+@property (nonatomic , weak ) UIWindow *actionSheetWindow;
 
 @property (nonatomic , strong ) UIWindow *currentKeyWindow;
 
-@property (nonatomic , strong ) UIWindow *actionSheetWindow;
+@property (nonatomic , strong ) UIImageView *actionSheetBackgroundImageView;
 
-@property (nonatomic , strong ) UIImageView *actionSheetWindowImageView;
+@property (nonatomic , strong ) UIView *actionSheetView;
 
-@property (nonatomic , strong ) UIScrollView *actionSheetView;
+@property (nonatomic , strong ) UIScrollView *actionSheetScrollView;
+
+@property (nonatomic , strong ) UIButton *actionSheetCancelButton;
 
 @property (nonatomic , strong ) NSMutableArray *actionSheetButtonArray;
+
+@property (nonatomic , copy ) void (^closeAction)();
+
+@end
+
+@implementation LEEActionSheetViewController
+{
+    CGFloat actionSheetViewHeight;
+    CGFloat actionSheetViewWidth;
+    UIDeviceOrientation currentOrientation;
+    BOOL isShowingActionSheet;
+}
+
+- (void)dealloc{
+    
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    
+    _config = nil;
+    
+    _currentKeyWindow = nil;
+    
+    _actionSheetWindow = nil;
+    
+    _actionSheetBackgroundImageView = nil;
+    
+    _actionSheetView = nil;
+    
+    _actionSheetScrollView = nil;
+    
+    _actionSheetCancelButton = nil;
+    
+    _actionSheetButtonArray = nil;
+}
+
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        
+        self.view.backgroundColor = [UIColor clearColor];
+        
+        self.actionSheetBackgroundImageView.backgroundColor = [UIColor clearColor];
+        
+        [self.view addSubview:self.actionSheetBackgroundImageView];
+        
+        [self addNotification];
+        
+        currentOrientation = (UIDeviceOrientation)self.interfaceOrientation; //默认当前方向
+    }
+    return self;
+}
+
+- (void)addNotification{
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(changeOrientationNotification:) name:UIDeviceOrientationDidChangeNotification object:nil];
+}
+
+- (void)changeOrientationNotification:(NSNotification *)notify{
+    
+    if ([UIDevice currentDevice].orientation != UIDeviceOrientationPortraitUpsideDown &&
+        [UIDevice currentDevice].orientation != UIDeviceOrientationFaceUp &&
+        [UIDevice currentDevice].orientation != UIDeviceOrientationFaceDown) currentOrientation = [UIDevice currentDevice].orientation; //设置当前方向
+    
+    if (self.config.modelActionSheetCustomBackGroundStype == LEEActionSheetCustomBackGroundStypeBlur) {
+        
+        self.actionSheetBackgroundImageView.image = [[self getCurrentKeyWindowImage] LeeActionSheet_ApplyTintEffectWithColor:self.config.modelActionSheetWindowBackGroundColor];;
+    }
+    
+    if (iOS8) [self updateOrientationLayout];
+}
+
+- (void)updateOrientationLayout{
+    
+    self.config.LeeCustomActionSheetMaxHeight(CGRectGetHeight([[UIScreen mainScreen] bounds]) - 20.0f); //更新最大高度 (iOS 8 以上处理)
+    
+    CGRect actionSheetViewFrame = self.actionSheetView.frame;
+    
+    actionSheetViewFrame.size.height = actionSheetViewHeight > self.config.modelActionSheetMaxHeight ? self.config.modelActionSheetMaxHeight : actionSheetViewHeight;
+    
+    actionSheetViewFrame.origin.y = CGRectGetHeight(self.view.frame);
+    
+    if (isShowingActionSheet) actionSheetViewFrame.origin.y = (CGRectGetHeight(self.view.frame) - actionSheetViewFrame.size.height) - 10.0f;
+    
+    self.actionSheetView.frame = actionSheetViewFrame;
+    
+    [self updateActionSheetViewSubViewsLayout]; //更新子视图布局
+    
+    self.actionSheetView.center = CGPointMake(CGRectGetWidth(self.view.frame) / 2 , self.actionSheetView.center.y);
+    
+    self.actionSheetBackgroundImageView.frame = self.view.frame;
+}
+
+- (void)updateOrientationLayoutWithInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation{
+    
+    self.config.LeeCustomActionSheetMaxHeight(UIDeviceOrientationIsLandscape(currentOrientation) ? CGRectGetWidth([[UIScreen mainScreen] bounds]) - 20.0f : CGRectGetHeight([[UIScreen mainScreen] bounds]) - 20.0f); //更新最大高度 (iOS 8 以下处理)
+    
+    switch (interfaceOrientation) {
+            
+        case UIInterfaceOrientationPortrait:
+        {
+            CGRect actionSheetViewFrame = self.actionSheetView.frame;
+            
+            actionSheetViewFrame.size.height = actionSheetViewHeight > self.config.modelActionSheetMaxHeight ? self.config.modelActionSheetMaxHeight : actionSheetViewHeight;;
+            
+            actionSheetViewFrame.origin.y = CGRectGetHeight(self.view.frame);
+            
+            if (isShowingActionSheet) actionSheetViewFrame.origin.y = (CGRectGetHeight(self.view.frame) - actionSheetViewFrame.size.height) - 10.0f;
+            
+            self.actionSheetView.frame = actionSheetViewFrame;
+            
+            self.actionSheetView.center = CGPointMake(CGRectGetWidth(self.view.frame) / 2, self.actionSheetView.center.y);
+            
+            self.actionSheetBackgroundImageView.transform = CGAffineTransformIdentity;
+            
+            self.actionSheetBackgroundImageView.frame = self.view.frame;
+        }
+            break;
+            
+        case UIInterfaceOrientationLandscapeLeft:
+        {
+            CGRect actionSheetViewFrame = self.actionSheetView.frame;
+            
+            actionSheetViewFrame.size.height = actionSheetViewHeight > self.config.modelActionSheetMaxHeight ? self.config.modelActionSheetMaxHeight : actionSheetViewHeight;;
+            
+            actionSheetViewFrame.origin.y = CGRectGetWidth(self.view.frame);
+            
+            if (isShowingActionSheet) actionSheetViewFrame.origin.y = (CGRectGetWidth(self.view.frame) - actionSheetViewFrame.size.height) - 10.0f;
+            
+            self.actionSheetView.frame = actionSheetViewFrame;
+            
+            self.actionSheetView.center = CGPointMake(CGRectGetHeight(self.view.frame) / 2, self.actionSheetView.center.y);
+            
+            self.actionSheetBackgroundImageView.transform = CGAffineTransformMakeRotation(M_PI / 2);
+            
+            self.actionSheetBackgroundImageView.frame = CGRectMake(0, 0, CGRectGetHeight(self.view.frame), CGRectGetWidth(self.view.frame));
+        }
+            break;
+            
+        case UIInterfaceOrientationLandscapeRight:
+        {
+            CGRect actionSheetViewFrame = self.actionSheetView.frame;
+            
+            actionSheetViewFrame.size.height = actionSheetViewHeight > self.config.modelActionSheetMaxHeight ? self.config.modelActionSheetMaxHeight : actionSheetViewHeight;;
+            
+            actionSheetViewFrame.origin.y = CGRectGetWidth(self.view.frame);
+            
+            if (isShowingActionSheet) actionSheetViewFrame.origin.y = (CGRectGetWidth(self.view.frame) - actionSheetViewFrame.size.height) - 10.0f;
+            
+            self.actionSheetView.frame = actionSheetViewFrame;
+            
+            self.actionSheetView.center = CGPointMake(CGRectGetHeight(self.view.frame) / 2 , self.actionSheetView.center.y);
+            
+            self.actionSheetBackgroundImageView.transform = CGAffineTransformMakeRotation(-(M_PI / 2));
+            
+            self.actionSheetBackgroundImageView.frame = CGRectMake(0, 0, CGRectGetHeight(self.view.frame), CGRectGetWidth(self.view.frame));
+        }
+            break;
+            
+        default:
+            break;
+    }
+    
+    [self updateActionSheetViewSubViewsLayout]; //更新子视图布局
+}
+
+- (void)updateActionSheetViewSubViewsLayout{
+
+    CGRect actionSheetScrollViewFrame = self.actionSheetScrollView.frame;
+    
+    actionSheetScrollViewFrame.size.height = _actionSheetCancelButton ? CGRectGetHeight(self.actionSheetView.frame) - CGRectGetHeight(self.actionSheetCancelButton.frame) - 10 : CGRectGetHeight(self.actionSheetView.frame);
+    
+    self.actionSheetScrollView.frame = actionSheetScrollViewFrame;
+    
+    if (_actionSheetCancelButton) {
+        
+        CGRect actionSheetCancelButtonFrame = self.actionSheetCancelButton.frame;
+        
+        actionSheetCancelButtonFrame.origin.y = CGRectGetHeight(self.actionSheetScrollView.frame) + 10;
+        
+        self.actionSheetCancelButton.frame = actionSheetCancelButtonFrame;
+    }
+
+}
+
+- (void)configActionSheet{
+    
+    actionSheetViewHeight = 0.0f;
+    
+    actionSheetViewWidth = self.config.modelActionSheetMaxWidth;
+    
+    [self.actionSheetView addSubview:self.actionSheetScrollView];
+    
+    [self.view addSubview: self.actionSheetView];
+    
+    //开始内部处理
+    
+    if (self.config.modelCustomSubViewsQueue.count > 0) {
+        
+        actionSheetViewHeight += self.config.modelTopSubViewMargin;
+    }
+    
+    for (NSDictionary *item in self.config.modelCustomSubViewsQueue) {
+        
+        switch ([item[@"type"] integerValue]) {
+                
+            case LEEActionSheetCustomSubViewTypeTitle:
+            {
+                
+                NSString *title = self.config.modelTitleStr ? self.config.modelTitleStr : @" ";
+                
+                UILabel *titleLabel = [[UILabel alloc]initWithFrame:CGRectMake(self.config.modelLeftSubViewMargin, actionSheetViewHeight, actionSheetViewWidth - self.config.modelLeftSubViewMargin - self.config.modelRightSubViewMargin, 0)];
+                
+                [self.actionSheetScrollView addSubview:titleLabel];
+                
+                titleLabel.textAlignment = NSTextAlignmentCenter;
+                
+                titleLabel.font = [UIFont boldSystemFontOfSize:14.0f];
+                
+                titleLabel.textColor = [UIColor blackColor];
+                
+                titleLabel.text = title;
+                
+                titleLabel.numberOfLines = 0;
+                
+                void(^addLabel)(UILabel *label) = item[@"block"];
+                
+                if (addLabel) addLabel(titleLabel);
+                
+                CGRect titleLabelRect = [self getLabelTextHeight:titleLabel];
+                
+                CGRect titleLabelFrame = titleLabel.frame;
+                
+                titleLabelFrame.size.height = titleLabelRect.size.height;
+                
+                titleLabel.frame = titleLabelFrame;
+                
+                actionSheetViewHeight += titleLabelFrame.size.height + self.config.modelSubViewMargin;
+                
+            }
+                break;
+            case LEEActionSheetCustomSubViewTypeContent:
+            {
+                
+                NSString *content = self.config.modelContentStr ? self.config.modelContentStr : @" ";
+                
+                UILabel *contentLabel = [[UILabel alloc]initWithFrame:CGRectMake(self.config.modelLeftSubViewMargin, actionSheetViewHeight, actionSheetViewWidth - self.config.modelLeftSubViewMargin - self.config.modelRightSubViewMargin, 0)];
+                
+                [self.actionSheetScrollView addSubview:contentLabel];
+                
+                contentLabel.textAlignment = NSTextAlignmentCenter;
+                
+                contentLabel.font = [UIFont systemFontOfSize:14.0f];
+                
+                contentLabel.textColor = [UIColor blackColor];
+                
+                contentLabel.text = content;
+                
+                contentLabel.numberOfLines = 0;
+                
+                void(^addLabel)(UILabel *label) = item[@"block"];
+                
+                if (addLabel) addLabel(contentLabel);
+                
+                CGRect contentLabelRect = [self getLabelTextHeight:contentLabel];
+                
+                CGRect contentLabelFrame = contentLabel.frame;
+                
+                contentLabelFrame.size.height = contentLabelRect.size.height;
+                
+                contentLabel.frame = contentLabelFrame;
+                
+                actionSheetViewHeight += contentLabelFrame.size.height + self.config.modelSubViewMargin;
+                
+            }
+                break;
+            case LEEActionSheetCustomSubViewTypeCustomView:
+            {
+                
+                if (self.config.modelCustomContentView) {
+                    
+                    CGRect customContentViewFrame = self.config.modelCustomContentView.frame;
+                    
+                    customContentViewFrame.origin.y = actionSheetViewHeight;
+                    
+                    self.config.modelCustomContentView.frame = customContentViewFrame;
+                    
+                    [self.actionSheetScrollView addSubview:self.config.modelCustomContentView];
+                    
+                    actionSheetViewHeight += CGRectGetHeight(self.config.modelCustomContentView.frame) + self.config.modelSubViewMargin;
+                }
+                
+            }
+                break;
+            default:
+                break;
+        }
+        
+    }
+    
+    if (self.config.modelCustomSubViewsQueue.count > 0) {
+        
+        actionSheetViewHeight -= self.config.modelSubViewMargin;
+        
+        actionSheetViewHeight += self.config.modelBottomSubViewMargin;
+    }
+    
+    if (self.config.modelDestructiveButtonTitleStr || self.config.modelDestructiveButtonAction || self.config.modelDestructiveButtonBlock) {
+        
+        UIButton *destructiveButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        
+        destructiveButton.frame = CGRectMake(0, actionSheetViewHeight, actionSheetViewWidth, 57.0f);
+        
+        [destructiveButton.layer setBorderWidth:0.5f];
+        
+        [destructiveButton.layer setBorderColor:[[UIColor grayColor] colorWithAlphaComponent:0.2f].CGColor];
+        
+        [destructiveButton.titleLabel setFont:[UIFont systemFontOfSize:20.0f]];
+        
+        [destructiveButton setTitle:self.config.modelDestructiveButtonTitleStr ? self.config.modelDestructiveButtonTitleStr : @"销毁" forState:UIControlStateNormal];
+        
+        [destructiveButton setTitleColor:[UIColor colorWithRed:255/255.0f green:59/255.0f blue:48/255.0f alpha:1.0f] forState:UIControlStateNormal];
+        
+        [destructiveButton setTitleColor:[UIColor colorWithRed:255/255.0f green:59/255.0f blue:48/255.0f alpha:0.5f] forState:UIControlStateHighlighted];
+        
+        [destructiveButton addTarget:self action:@selector(destructiveButtonAction:) forControlEvents:UIControlEventTouchUpInside];
+        
+        [self.actionSheetScrollView addSubview:destructiveButton];
+        
+        if (self.config.modelDestructiveButtonBlock) self.config.modelDestructiveButtonBlock(self.actionSheetCancelButton);
+        
+        actionSheetViewHeight += CGRectGetHeight(destructiveButton.frame);
+    }
+    
+    for (NSDictionary *buttonDic in self.config.modelButtonArray) {
+        
+        NSString *buttonTitle = buttonDic[@"title"];
+        
+        void(^addButton)(UIButton *button) = buttonDic[@"block"];
+        
+        UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
+        
+        button.frame = CGRectMake(0, actionSheetViewHeight, actionSheetViewWidth, 57.0f);
+        
+        [button.layer setBorderWidth:0.5f];
+        
+        [button.layer setBorderColor:[[UIColor grayColor] colorWithAlphaComponent:0.2f].CGColor];
+        
+        [button.titleLabel setFont:[UIFont systemFontOfSize:20.0f]];
+        
+        [button setTitle:buttonTitle forState:UIControlStateNormal];
+        
+        [button setTitleColor:[UIColor colorWithRed:0/255.0f green:122/255.0f blue:255/255.0f alpha:1.0f] forState:UIControlStateNormal];
+        
+        [button setTitleColor:[UIColor lightGrayColor] forState:UIControlStateHighlighted];
+        
+        [button addTarget:self action:@selector(buttonAction:) forControlEvents:UIControlEventTouchUpInside];
+        
+        [self.actionSheetScrollView addSubview:button];
+        
+        [self.actionSheetButtonArray addObject:button];
+        
+        if (addButton) addButton(button);
+        
+        actionSheetViewHeight += CGRectGetHeight(button.frame);
+    }
+    
+    self.actionSheetScrollView.contentSize = CGSizeMake(actionSheetViewWidth, actionSheetViewHeight);
+    
+    self.actionSheetScrollView.layer.cornerRadius = self.config.modelCornerRadius;
+    
+    if (self.config.modelCancelButtonTitleStr || self.config.modelCancelButtonAction || self.config.modelCancelButtonBlock) {
+        
+        self.actionSheetCancelButton.frame = CGRectMake(0, actionSheetViewHeight += 10.0f, actionSheetViewWidth, 57.0f);
+        
+        [self.actionSheetCancelButton.layer setBorderWidth:0.5f];
+        
+        [self.actionSheetCancelButton.layer setBorderColor:[[UIColor grayColor] colorWithAlphaComponent:0.2f].CGColor];
+        
+        [self.actionSheetCancelButton.layer setCornerRadius:self.config.modelCornerRadius];
+        
+        [self.actionSheetCancelButton.titleLabel setFont:[UIFont boldSystemFontOfSize:20.0f]];
+        
+        [self.actionSheetCancelButton setTitle:self.config.modelCancelButtonTitleStr ? self.config.modelCancelButtonTitleStr : @"取消" forState:UIControlStateNormal];
+        
+        [self.actionSheetCancelButton setTitleColor:[UIColor colorWithRed:0/255.0f green:122/255.0f blue:255/255.0f alpha:1.0f] forState:UIControlStateNormal];
+        
+        [self.actionSheetCancelButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateHighlighted];
+        
+        [self.actionSheetCancelButton setBackgroundColor:self.config.modelActionSheetViewColor];
+        
+        [self.actionSheetCancelButton addTarget:self action:@selector(cancelButtonAction:) forControlEvents:UIControlEventTouchUpInside];
+        
+        [self.actionSheetView addSubview:self.actionSheetCancelButton];
+        
+        if (self.config.modelCancelButtonBlock) self.config.modelCancelButtonBlock(self.actionSheetCancelButton);
+        
+        actionSheetViewHeight += CGRectGetHeight(self.actionSheetCancelButton.frame);
+    }
+    
+    if (iOS8) [self updateOrientationLayout]; //更新布局 iOS 8 以上处理
+    
+    if (!iOS8) [self updateOrientationLayoutWithInterfaceOrientation:self.interfaceOrientation]; //更新布局 iOS 8 以下处理
+
+    //开启显示动画
+    
+    [self showActionSheetAnimations];
+}
+
+- (void)cancelButtonAction:(UIButton *)sender{
+    
+    if (self.config.modelCancelButtonAction) self.config.modelCancelButtonAction();
+    
+    [self closeAnimations];
+}
+
+- (void)destructiveButtonAction:(UIButton *)sender{
+    
+    if (self.config.modelDestructiveButtonAction) self.config.modelDestructiveButtonAction();
+    
+    [self closeAnimations];
+}
+
+- (void)buttonAction:(UIButton *)sender{
+    
+    void (^buttonAction)() = self.config.modelButtonArray[[self.actionSheetButtonArray indexOfObject:sender]][@"actionblock"];
+    
+    if (buttonAction) buttonAction();
+    
+    if (self.config.modelIsCustomButtonClickClose) [self closeAnimations];
+}
+
+- (void)actionSheetViewTapAction:(UITapGestureRecognizer *)tap{
+    
+    //拦截ActionSheetView点击响应
+}
+
+#pragma mark start animations
+
+- (void)showActionSheetAnimations{
+    
+    if (self.config.modelActionSheetCustomBackGroundStype == LEEActionSheetCustomBackGroundStypeBlur) {
+        
+        self.actionSheetBackgroundImageView.alpha = 0.0f;
+        
+        self.actionSheetBackgroundImageView.image = [[self getCurrentKeyWindowImage] LeeActionSheet_ApplyTintEffectWithColor:self.config.modelActionSheetWindowBackGroundColor];
+    }
+    
+    isShowingActionSheet = YES; //显示ActionSheet
+    
+    self.actionSheetWindow.hidden = NO;
+    
+    [self.actionSheetWindow makeKeyAndVisible];
+    
+    __weak typeof(self) weakSelf = self;
+    
+    if (weakSelf.config.modelActionSheetCustomBackGroundStype == LEEActionSheetCustomBackGroundStypeTranslucent) {
+        
+        [UIView animateWithDuration:self.config.modelActionSheetOpenAnimationDuration animations:^{
+            
+            weakSelf.view.backgroundColor = [weakSelf.view.backgroundColor colorWithAlphaComponent:0.6f];
+            
+            if (iOS8) [self updateOrientationLayout]; //更新布局 iOS 8 以上处理
+            
+            if (!iOS8) [self updateOrientationLayoutWithInterfaceOrientation:self.interfaceOrientation]; //更新布局 iOS 8 以下处理
+            
+        } completion:^(BOOL finished) {}];
+        
+    } else if (weakSelf.config.modelActionSheetCustomBackGroundStype == LEEActionSheetCustomBackGroundStypeBlur) {
+        
+        [UIView animateWithDuration:self.config.modelActionSheetOpenAnimationDuration animations:^{
+            
+            weakSelf.actionSheetBackgroundImageView.alpha = 1.0f;
+            
+            if (iOS8) [self updateOrientationLayout]; //更新布局 iOS 8 以上处理
+            
+            if (!iOS8) [self updateOrientationLayoutWithInterfaceOrientation:self.interfaceOrientation]; //更新布局 iOS 8 以下处理
+            
+        } completion:^(BOOL finished) {}];
+        
+    }
+    
+}
+
+#pragma mark close animations
+
+- (void)closeAnimations{
+    
+    __weak typeof(self) weakSelf = self;
+    
+    [self closeAnimationsWithCompletionBlock:^{
+        
+        if (weakSelf.closeAction) weakSelf.closeAction();
+    }];
+    
+}
+
+- (void)closeAnimationsWithCompletionBlock:(void (^)())completionBlock{
+    
+    [self.actionSheetWindow endEditing:YES]; //结束输入 收起键盘
+    
+    isShowingActionSheet = NO;
+    
+    __weak typeof(self) weakSelf = self;
+    
+    [UIView animateWithDuration:self.config.modelActionSheetCloseAnimationDuration animations:^{
+        
+        if (weakSelf.config.modelActionSheetCustomBackGroundStype == LEEActionSheetCustomBackGroundStypeTranslucent) {
+            
+            weakSelf.view.backgroundColor = [weakSelf.view.backgroundColor colorWithAlphaComponent:0.0f];
+            
+        } else if (weakSelf.config.modelActionSheetCustomBackGroundStype == LEEActionSheetCustomBackGroundStypeBlur) {
+            
+            weakSelf.actionSheetBackgroundImageView.alpha = 0.0f;
+        }
+        
+        if (iOS8) [self updateOrientationLayout]; //更新布局 iOS 8 以上处理
+        
+        if (!iOS8) [self updateOrientationLayoutWithInterfaceOrientation:self.interfaceOrientation]; //更新布局 iOS 8 以下处理
+        
+    } completion:^(BOOL finished) {
+        
+        weakSelf.actionSheetView.transform = CGAffineTransformIdentity;
+        
+        weakSelf.actionSheetView.alpha = 1.0f;
+        
+        weakSelf.actionSheetWindow.hidden = YES;
+        
+        [weakSelf.actionSheetWindow resignKeyWindow];
+        
+        if (completionBlock) completionBlock();
+    }];
+    
+}
+
+#pragma mark Tool
+
+- (UIImage *)getCurrentKeyWindowImage{
+    
+    UIGraphicsBeginImageContext(self.currentKeyWindow.frame.size);
+    
+    [self.currentKeyWindow.layer renderInContext:UIGraphicsGetCurrentContext()];
+    
+    UIImage *image =UIGraphicsGetImageFromCurrentImageContext();
+    
+    UIGraphicsEndImageContext();
+    
+    return image;
+}
+
+- (CGRect)getLabelTextHeight:(UILabel *)label{
+    
+    CGRect rect = [label.text boundingRectWithSize:CGSizeMake(CGRectGetWidth(label.frame), MAXFLOAT) options:NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName : label.font} context:nil];
+    
+    return rect;
+}
+
+#pragma mark LazyLoading
+
+- (UIWindow *)currentKeyWindow{
+    
+    if (!_currentKeyWindow) _currentKeyWindow = [LEEActionSheet shareActionSheetManager].mainWindow;
+    
+    if (!_currentKeyWindow) _currentKeyWindow = [UIApplication sharedApplication].keyWindow;
+    
+    if (_currentKeyWindow) if (![LEEActionSheet shareActionSheetManager].mainWindow) [LEEActionSheet shareActionSheetManager].mainWindow = _currentKeyWindow;
+    
+    return _currentKeyWindow;
+}
+
+- (UIImageView *)actionSheetBackgroundImageView{
+    
+    if (!_actionSheetBackgroundImageView) _actionSheetBackgroundImageView = [[UIImageView alloc]initWithFrame:self.view.frame];
+    
+    return _actionSheetBackgroundImageView;
+}
+
+-(UIView *)actionSheetView{
+    
+    if (!_actionSheetView) {
+        
+        _actionSheetView = [[UIScrollView alloc]initWithFrame:CGRectMake(0, 0, self.config.modelActionSheetMaxWidth, 0)];
+        
+        _actionSheetView.backgroundColor = [UIColor clearColor];
+        
+        UITapGestureRecognizer *actionSheetViewTap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(actionSheetViewTapAction:)];
+        
+        [_actionSheetView addGestureRecognizer:actionSheetViewTap];
+    }
+    
+    return _actionSheetView;
+}
+
+- (UIScrollView *)actionSheetScrollView{
+    
+    if (!_actionSheetScrollView) {
+        
+        _actionSheetScrollView = [[UIScrollView alloc]initWithFrame:CGRectMake(0, 0, CGRectGetWidth(self.actionSheetView.frame), 0)];
+        
+        _actionSheetScrollView.backgroundColor = self.config.modelActionSheetViewColor;
+        
+        _actionSheetScrollView.directionalLockEnabled = YES;
+        
+        _actionSheetScrollView.bounces = NO;
+    }
+    
+    return _actionSheetScrollView;
+}
+
+- (UIButton *)actionSheetCancelButton{
+    
+    if (!_actionSheetCancelButton) _actionSheetCancelButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    
+    return _actionSheetCancelButton;
+}
+
+-(NSMutableArray *)actionSheetButtonArray{
+    
+    if (!_actionSheetButtonArray) _actionSheetButtonArray = [NSMutableArray array];
+    
+    return _actionSheetButtonArray;
+}
+
+#pragma mark  Rotation
+
+- (BOOL)shouldAutorotate{
+    
+    return YES;
+}
+
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+    
+    return UIInterfaceOrientationMaskAll;
+}
+
+- (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration{
+    
+    if (!iOS8) [self updateOrientationLayoutWithInterfaceOrientation:toInterfaceOrientation]; //iOS 8 以下处理
+}
+
+@end
+
+@interface LEEActionSheetCustom ()<LEEActionSheetManagerDelegate>
+
+@property (nonatomic , strong ) UIWindow *actionSheetWindow;
+
+@property (nonatomic , strong ) LEEActionSheetViewController *actionSheetViewController;
 
 @end
 
@@ -620,7 +1595,122 @@ static NSString * const LEEActionSheetShowNotification = @"LEEActionSheetShowNot
 
 @implementation LEEActionSheetCustom
 
+- (void)dealloc{
+    
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    
+    _config = nil;
+    
+    _actionSheetViewController = nil;
+}
 
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        
+        //发送通知
+        
+        NSDictionary * notifyInfo = @{@"customActionSheet" : self , @"actionSheetWindow" : self.actionSheetWindow};
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:LEEActionSheetShowNotification object:self userInfo:notifyInfo];
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(actionSheetShowNotification:) name:LEEActionSheetShowNotification object:nil];
+        
+        //设置当前自定义ActionSheet代理对象
+        
+        [LEEActionSheet shareActionSheetManager].currentCustomActionSheetDelegate = self;
+        
+        self.actionSheetWindow.rootViewController = self.actionSheetViewController;
+        
+        self.actionSheetViewController.actionSheetWindow = self.actionSheetWindow;
+        
+        __weak typeof(self) weakSelf = self;
+        
+        self.actionSheetViewController.closeAction = ^(){
+            
+            //释放
+            
+            weakSelf.actionSheetWindow.rootViewController = nil;
+            
+            _actionSheetViewController = nil;
+            
+            _actionSheetWindow = nil;
+            
+            _config = nil;
+        };
+        
+    }
+    return self;
+}
+
+- (void)actionSheetShowNotification:(NSNotification *)notify{
+    
+    NSDictionary *notifyInfo = notify.userInfo;
+    
+    if (notifyInfo[@"customActionSheet"] != self) [self.actionSheetViewController closeAnimations];
+}
+
+- (void)actionSheetWindowTapAction:(UITapGestureRecognizer *)tap{
+    
+    if (self.config.modelIsActionSheetWindowTouchClose) [self.actionSheetViewController closeAnimations];
+}
+
+#pragma mark LEEActionSheetManagerDelegate
+
+-(void)customActionSheetCloseDelegate{
+    
+    [self.actionSheetViewController closeAnimations];
+}
+
+#pragma mark LazyLoading
+
+- (LEEActionSheetConfigModel *)config{
+    
+    if (!_config) {
+        
+        _config = [[LEEActionSheetConfigModel alloc]init];
+        
+        __strong typeof(self) strongSelf = self;
+        
+        _config.modelFinishConfig = ^(UIViewController *vc){
+            
+            strongSelf.actionSheetViewController.config = strongSelf.config;
+            
+            [strongSelf.actionSheetViewController configActionSheet];
+        };
+        
+    }
+    
+    return _config;
+}
+
+- (UIWindow *)actionSheetWindow{
+    
+    if (!_actionSheetWindow) {
+        
+        _actionSheetWindow = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+        
+        _actionSheetWindow.backgroundColor = [self.config.modelActionSheetWindowBackGroundColor colorWithAlphaComponent:0.0f];
+        
+        _actionSheetWindow.windowLevel = UIWindowLevelAlert;
+        
+        _actionSheetWindow.hidden = YES;
+        
+        UITapGestureRecognizer *actionSheetWindowTap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(actionSheetWindowTapAction:)];
+        
+        [_actionSheetWindow addGestureRecognizer:actionSheetWindowTap];
+    }
+    
+    return _actionSheetWindow;
+}
+
+- (LEEActionSheetViewController *)actionSheetViewController{
+    
+    if (!_actionSheetViewController) _actionSheetViewController = [[LEEActionSheetViewController alloc] init];
+    
+    return _actionSheetViewController;
+}
 
 @end
 

@@ -97,8 +97,6 @@
     
     [self.view addSubview:redView];
     
-    
-    
 }
 
 - (void)didReceiveMemoryWarning {
@@ -110,30 +108,235 @@
 
 - (void)button1Action{
     
+    //一个按钮的ActionSheet
     
-    
+    [LEEActionSheet actionSheet].custom.config
+    .LeeAddButton(@"按钮1" , ^(){
+        
+        NSLog(@"点击了按钮1");
+        
+    })
+    .LeeShow();
+
 }
 
 - (void)button2Action{
     
+    //多个按钮并带取消按钮的ActionSheet
     
+    [LEEActionSheet actionSheet].custom.config
+    .LeeCancelButtonAction(^(){
+    
+        NSLog(@"点击了取消按钮");
+        
+    })
+    .LeeAddButton(@"按钮1" , ^(){
+        
+        NSLog(@"点击了按钮1");
+        
+    })
+    .LeeAddButton(@"按钮2" , ^(){
+        
+        NSLog(@"点击了按钮2");
+        
+    })
+    .LeeAddButton(@"按钮3" , ^(){
+        
+        NSLog(@"点击了按钮3");
+        
+    })
+    .LeeAddButton(@"按钮4" , ^(){
+        
+        NSLog(@"点击了按钮4");
+        
+    })
+    .LeeShow();
+
 }
 
 
 - (void)button3Action{
     
+    //多个按钮并带有标题内容的ActionSheet
+    
+    [LEEActionSheet actionSheet].custom.config
+    .LeeTitle(@"标题")
+    .LeeContent(@"内容")
+    .LeeAddButton(@"按钮1" , ^(){
+        
+        NSLog(@"点击了按钮1");
+        
+    })
+    .LeeAddButton(@"按钮2" , ^(){
+        
+        NSLog(@"点击了按钮2");
+        
+    })
+    .LeeAddButton(@"按钮3" , ^(){
+        
+        NSLog(@"点击了按钮3");
+        
+    })
+    .LeeAddButton(@"按钮4" , ^(){
+        
+        NSLog(@"点击了按钮4");
+        
+    })
+    .LeeShow();
     
 }
 
 
 - (void)button4Action{
     
+    //带标题内容 销毁按钮和取消按钮以及多个自定义按钮的ActionSheet
+    
+    [LEEActionSheet actionSheet].custom.config
+    .LeeTitle(@"标题")
+    .LeeContent(@"内容")
+    .LeeCancelButtonTitle(@"取消")
+    .LeeCancelButtonAction(^(){
+        
+        NSLog(@"点击了取消按钮");
+        
+    })
+    .LeeDestructiveButtonAction(^(){
+        
+        NSLog(@"点击了销毁按钮");
+        
+    })
+    .LeeAddButton(@"按钮1" , ^(){
+        
+        NSLog(@"点击了按钮1");
+        
+    })
+    .LeeAddButton(@"按钮2" , ^(){
+        
+        NSLog(@"点击了按钮2");
+        
+    })
+    
+    .LeeAddButton(@"按钮3" , ^(){
+        
+        NSLog(@"点击了按钮3");
+        
+    })
+    .LeeAddButton(@"按钮4" , ^(){
+        
+        NSLog(@"点击了按钮4");
+        
+    })
+    .LeeShow();
     
 }
 
 - (void)button5Action{
     
-   
+    /**
+     下面为全部自定义设置方法的演示说明
+     */
+    
+    //初始化一个自定义视图
+    
+    UIView *customView = [[UIView alloc]initWithFrame:CGRectMake(20, 0, 260, 100)];
+    
+    customView.backgroundColor = [UIColor grayColor];
+    
+    UIButton *customViewCloseButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    
+    customViewCloseButton.frame = CGRectMake(0, 0, 150, 30);
+    
+    [customViewCloseButton setBackgroundColor:[UIColor lightGrayColor]];
+    
+    [customViewCloseButton setTitle:@"关闭ActionSheet" forState:UIControlStateNormal];
+    
+    [customViewCloseButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    
+    [customViewCloseButton addTarget:self action:@selector(customViewCloseButtonAction:) forControlEvents:UIControlEventTouchUpInside];
+    
+    [customView addSubview:customViewCloseButton];
+    
+    
+    [LEEActionSheet actionSheet].custom.config
+    .LeeCustomTitle(^(UILabel *label){
+        
+        //自定义标题Label
+        
+    })
+    .LeeTitle(@"自定义标题")    //添加标题
+    .LeeContent(@"自定义内容自定义内容自定义内容自定义内容自定义内容自定义内容自定义内容自定义内容自定义内容自定义内容自定义内容自定义内容")   //添加内容
+    .LeeCustomContent(^(UILabel *label){
+        
+        //自定义内容Label
+        
+    })
+    .LeeCustomView(customView) //添加自定义视图
+    .LeeAddButton(@"添加的按钮" , ^(){
+        
+        //添加按钮 传入按钮标题 和点击事件的Block
+        
+        NSLog(@"点击了添加的按钮");
+        
+    })
+    .LeeCancelButtonTitle(@"取消")   //设置取消按钮标题
+    .LeeCancelButtonAction(^(){
+        
+        //获取取消按钮点击事件
+        
+        NSLog(@"点击了取消按钮");
+        
+    })
+    .LeeCustomCancelButton(^(UIButton *button){
+        
+        //自定义取消按钮
+        
+        [button setTitleColor:[UIColor orangeColor] forState:UIControlStateNormal];
+        
+    })
+    .LeeDestructiveButtonTitle(@"销毁")   //设置销毁按钮标题
+    .LeeDestructiveButtonAction(^(){
+        
+        //获取销毁按钮点击事件
+        
+        NSLog(@"点击了销毁按钮");
+        
+    })
+    .LeeCustomDestructiveButton(^(UIButton *button){
+    
+        //自定义销毁按钮
+    
+    })
+    .LeeAddCustomButton(^(UIButton *button){
+        
+        //添加自定义按钮 设置按钮字体颜色为红色(演示用)
+        
+        [button setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
+        
+    })
+    .LeeAddCustomButton(^(UIButton *button){
+        
+        //button为你添加的自定义按钮对象 , 这里可以随意自定义button对象的属性 , 但注意一点: 尽量不要修改button的frame 可能会造成位置错乱
+        //如果需要特殊样式的button 建议在customView中自行玩耍
+        
+        [button setTitleColor:[UIColor blueColor] forState:UIControlStateNormal];
+        
+    })
+    .LeeCustomCornerRadius(15.0f)  //设置自定义ActionSheet的圆角半径 默认为 15
+    .LeeCustomActionSheetMaxWidth(300)   //设置自定义ActionSheet的最大宽度 默认为 300 (也就是最小设备屏幕宽度 320 去除两边10的间距)
+    .LeeCustomActionSheetMaxHeight(CGRectGetHeight([[UIScreen mainScreen] bounds]) - 20.0f)   //设置自定义ActionSheet的最大高度 默认为屏幕高度减20上下边距
+    .LeeCustomSubViewMargin(10.0f)  //设置自定义ActionSheet的子控件上下边距 默认为 10
+    .LeeCustomTopSubViewMargin(20.0f)   //设置自定义ActionSheet的第一个子控件距离ActionSheet上边缘的边距 默认 20
+    .LeeCustomBottomSubViewMargin(20.0f)   //设置自定义ActionSheet的第一个子控件距离ActionSheet下边缘的边距 (如果有按钮存在 则是距离按钮部分的边距) 默认 20
+    .LeeCustomLeftSubViewMargin(20.0f)   //设置自定义ActionSheet的子控件距离左侧边缘间距 //默认为20
+    .LeeCustomRightSubViewMargin(20.0f)   //设置自定义ActionSheet的子控件距离右侧边缘间距 //默认为20
+    .LeeCustomActionSheetOpenAnimationDuration(0.3f)   //设置自定义ActionSheet的打开动画效果时长 默认0.3秒
+    .LeeCustomActionSheetCloseAnimationDuration(0.2f)   //设置自定义ActionSheet的关闭动画效果时长 默认0.2秒
+    .LeeCustomActionSheetViewColor([UIColor whiteColor])   //设置自定义ActionSheet的颜色 默认为白色
+    .LeeCustomActionSheetViewBackGroundColor([UIColor blackColor])   //设置自定义ActionSheet的半透明或者模糊的背景渲染颜色
+    .LeeCustomActionSheetTouchClose()   //设置自定义ActionSheet的背景点击关闭功能
+    .LeeCustomButtonClickNotClose()   //设置自定义ActionSheet的自定义按钮点击不关闭ActionSheet
+    .LeeCustomActionSheetViewBackGroundStypeBlur()   //设置自定义ActionSheet的背景样式为高斯模糊样式 如果不设置这项 默认为半透明样式
+    .LeeShow();    //显示ActionSheet
     
 }
 
@@ -144,18 +347,8 @@
     
     //关闭自定义ActionSheet
     
-    
+    [LEEActionSheet closeCustomActionSheet];
     
 }
-
-#pragma mark - UITextFieldDelegate
-
--(BOOL)textFieldShouldReturn:(UITextField *)textField{
-    
-    [textField resignFirstResponder];
-    
-    return NO;
-}
-
 
 @end

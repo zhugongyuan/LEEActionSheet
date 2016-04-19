@@ -14,11 +14,6 @@
 
 #import "LEEActionSheet.h"
 
-@interface ViewController ()<UIActionSheetDelegate>
-
-
-@end
-
 @implementation ViewController
 
 - (void)viewDidLoad{
@@ -118,7 +113,6 @@
         
     })
     .LeeShow();
-
     
 }
 
@@ -145,6 +139,8 @@
     //带一个取消按钮和一个销毁按钮的ActionSheet
     
     [LEEActionSheet actionSheet].system.config
+    .LeeTitle(@"标题")
+    .LeeContent(@"内容")
     .LeeCancelButtonTitle(@"取消")
     .LeeCancelButtonAction(^(){
         

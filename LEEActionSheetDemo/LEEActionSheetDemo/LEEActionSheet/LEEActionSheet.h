@@ -3,19 +3,17 @@
  *  @header LEEActionSheet.h
  *          
  *
- *  @brief  操作表
+ *  @brief  操作列表
  *
- *  @author 李响
+ *  @author LEE
  *  @copyright    Copyright © 2016年 lee. All rights reserved.
- *  @version    1.0
+ *  @version    V1.0
  */
-
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
 @class LEEActionSheetSystem , LEEActionSheetCustom , LEEActionSheetConfigModel;
-
 
 typedef LEEActionSheetConfigModel *(^LEEConfigActionSheet)();
 typedef LEEActionSheetConfigModel *(^LEEConfigActionSheetToInteger)(NSInteger number);
@@ -46,9 +44,6 @@ typedef LEEActionSheetConfigModel *(^LEEConfigActionSheetToViewController)(UIVie
  
  */
 
-// 如果需要用“断言”调试程序请打开此宏
-
-//#define LEEDebugWithAssert
 
 @interface LEEActionSheet : NSObject
 
@@ -61,16 +56,16 @@ typedef LEEActionSheetConfigModel *(^LEEConfigActionSheetToViewController)(UIVie
  */
 @property (nonatomic , strong ) LEEActionSheetCustom *custom;
 
-/**
- *  初始化ActionSheet
- *
- *  @return 返回一个LEEActionSheet对象
- */
+/** 初始化ActionSheet */
+
 + (LEEActionSheet *)actionSheet;
 
-/**
- *  关闭自定义ActionSheet
- */
+/** 设置主窗口 */
+
++ (void)configMainWindow:(UIWindow *)window;
+
+/** 关闭自定义ActionSheet */
+
 + (void)closeCustomActionSheet;
 
 @end
@@ -112,11 +107,58 @@ typedef LEEActionSheetConfigModel *(^LEEConfigActionSheetToViewController)(UIVie
 /** 设置 ActionSheet 添加按钮 -> 格式: .LeeAddButton(@@"" , ^(){ //code.. }) */
 @property (nonatomic , copy , readonly ) LEEConfigActionSheetToButtonAndBlock LeeAddButton;
 
-/* Alert 自定义设置 */
+/* ActionSheet 自定义设置 */
 
+/** 设置 ActionSheet 自定义标题 -> 格式: .LeeCustomTitle(^(UILabel *label){ //code.. }) */
+@property (nonatomic , copy , readonly ) LEEConfigActionSheetToCustomLabel LeeCustomTitle;
+/** 设置 ActionSheet 自定义内容 -> 格式: .LeeCustomContent(^(UILabel *label){ //code.. }) */
+@property (nonatomic , copy , readonly ) LEEConfigActionSheetToCustomLabel LeeCustomContent;
+/** 设置 ActionSheet 自定义取消按钮 -> 格式: .LeeCustomCancelButton(^(UIButton *button){ //code.. } */
+@property (nonatomic , copy , readonly ) LEEConfigActionSheetToCustomButton LeeCustomCancelButton;
+/** 设置 ActionSheet 自定义销毁按钮 -> 格式: .LeeCustomDestructiveButton(^(UIButton *button){ //code.. } */
+@property (nonatomic , copy , readonly ) LEEConfigActionSheetToCustomButton LeeCustomDestructiveButton;
+/** 设置 ActionSheet 自定义视图 -> 格式: .LeeCustomView(UIView) */
+@property (nonatomic , copy , readonly ) LEEConfigActionSheetToView LeeCustomView;
+/** 设置 ActionSheet 添加自定义按钮 -> 格式: .LeeAddCustomButton(^(UIButton *button){ //code.. }) */
+@property (nonatomic , copy , readonly ) LEEConfigActionSheetToCustomButton LeeAddCustomButton;
 
+/** 设置 ActionSheet 自定义圆角半径 -> 格式: .LeeCustomCornerRadius(0.0f) */
+@property (nonatomic , copy , readonly ) LEEConfigActionSheetToFloat LeeCustomCornerRadius;
+/** 设置 ActionSheet 自定义控件间距 -> 格式: .LeeCustomSubViewMargin(0.0f) */
+@property (nonatomic , copy , readonly ) LEEConfigActionSheetToFloat LeeCustomSubViewMargin;
+/** 设置 ActionSheet 自定义顶部距离控件的间距 -> 格式: .LeeCustomTopSubViewMargin(0.0f) */
+@property (nonatomic , copy , readonly ) LEEConfigActionSheetToFloat LeeCustomTopSubViewMargin;
+/** 设置 ActionSheet 自定义底部距离控件的间距 -> 格式: .LeeCustomBottomSubViewMargin(0.0f) */
+@property (nonatomic , copy , readonly ) LEEConfigActionSheetToFloat LeeCustomBottomSubViewMargin;
+/** 设置 ActionSheet 自定义左侧距离控件的间距 -> 格式: .LeeCustomLeftSubViewMargin(0.0f) */
+@property (nonatomic , copy , readonly ) LEEConfigActionSheetToFloat LeeCustomLeftSubViewMargin;
+/** 设置 ActionSheet 自定义右侧距离控件的间距 -> 格式: .LeeCustomRightSubViewMargin(0.0f) */
+@property (nonatomic , copy , readonly ) LEEConfigActionSheetToFloat LeeCustomRightSubViewMargin;
+/** 设置 ActionSheet 自定义ActionSheet最大宽度 -> 格式: .LeeCustomActionSheetMaxWidth(0.0f) */
+@property (nonatomic , copy , readonly ) LEEConfigActionSheetToFloat LeeCustomActionSheetMaxWidth;
+/** 设置 ActionSheet 自定义ActionSheet最大高度 -> 格式: .LeeCustomActionSheetMaxHeight(0.0f) */
+@property (nonatomic , copy , readonly ) LEEConfigActionSheetToFloat LeeCustomActionSheetMaxHeight;
+/** 设置 ActionSheet 自定义ActionSheet开启动画时长 -> 格式: .LeeCustomActionSheetOpenAnimationDuration(0.0f) */
+@property (nonatomic , copy , readonly ) LEEConfigActionSheetToFloat LeeCustomActionSheetOpenAnimationDuration;
+/** 设置 ActionSheet 自定义ActionSheet关闭动画时长 -> 格式: .LeeCustomActionSheetCloseAnimationDuration(0.0f) */
+@property (nonatomic , copy , readonly ) LEEConfigActionSheetToFloat LeeCustomActionSheetCloseAnimationDuration;
 
-/** 显示 Alert 默认通过KeyWindow弹出 -> 格式: .LeeShow() */
+/** 设置 ActionSheet 自定义ActionSheet颜色 -> 格式: .LeeCustomActionSheetViewColor(UIColor) */
+@property (nonatomic , copy , readonly ) LEEConfigActionSheetToColor LeeCustomActionSheetViewColor;
+/** 设置 ActionSheet 自定义ActionSheet半透明或模糊背景颜色 -> 格式: .LeeCustomActionSheetViewBackGroundColor(UIColor) */
+@property (nonatomic , copy , readonly ) LEEConfigActionSheetToColor LeeCustomActionSheetViewBackGroundColor;
+
+/** 设置 ActionSheet 自定义ActionSheet半透明背景样式 [默认] -> 格式: .LeeCustomActionSheetViewBackGroundStypeTranslucent() */
+@property (nonatomic , copy , readonly ) LEEConfigActionSheet LeeCustomActionSheetViewBackGroundStypeTranslucent;
+/** 设置 ActionSheet 自定义ActionSheet模糊背景样式 -> 格式: .LeeCustomActionSheetViewBackGroundStypeBlur() */
+@property (nonatomic , copy , readonly ) LEEConfigActionSheet LeeCustomActionSheetViewBackGroundStypeBlur;
+
+/** 设置 ActionSheet 自定义ActionSheet背景触摸关闭 -> 格式: .LeeCustomActionSheetTouchClose() */
+@property (nonatomic , copy , readonly ) LEEConfigActionSheet LeeCustomActionSheetTouchClose;
+/** 设置 ActionSheet 自定义按钮点击不关闭ActionSheet -> 格式: .LeeCustomButtonClickNotClose() */
+@property (nonatomic , copy , readonly ) LEEConfigActionSheet LeeCustomButtonClickNotClose;
+
+/** 显示 ActionSheet 默认通过KeyWindow弹出 -> 格式: .LeeShow() */
 @property (nonatomic , copy , readonly ) LEEConfigActionSheet LeeShow;
 /** 显示 ActionSheet 通过指定视图控制器弹出 (仅适用系统类型)  -> 格式: .LeeShowFromViewController(UIViewController) */
 @property (nonatomic , copy , readonly ) LEEConfigActionSheetToViewController LeeShowFromViewController;
@@ -135,9 +177,36 @@ typedef LEEActionSheetConfigModel *(^LEEConfigActionSheetToViewController)(UIVie
 
 @end
 
+@interface LEEActionSheetViewController : UIViewController @end
 
 
 
+
+/*
+ *
+ *          ┌─┐       ┌─┐
+ *       ┌──┘ ┴───────┘ ┴──┐
+ *       │                 │
+ *       │       ───       │
+ *       │  ─┬┘       └┬─  │
+ *       │                 │
+ *       │       ─┴─       │
+ *       │                 │
+ *       └───┐         ┌───┘
+ *           │         │
+ *           │         │
+ *           │         │
+ *           │         └──────────────┐
+ *           │                        │
+ *           │                        ├─┐
+ *           │                        ┌─┘
+ *           │                        │
+ *           └─┐  ┐  ┌───────┬──┐  ┌──┘
+ *             │ ─┤ ─┤       │ ─┤ ─┤
+ *             └──┴──┘       └──┴──┘
+ *                 神兽保佑
+ *                 代码无BUG!
+ */
 
 
 

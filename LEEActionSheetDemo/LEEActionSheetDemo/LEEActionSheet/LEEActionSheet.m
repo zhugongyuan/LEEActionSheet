@@ -1270,7 +1270,7 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
         
         [self.actionSheetScrollView addSubview:destructiveButton];
         
-        if (self.config.modelDestructiveButtonBlock) self.config.modelDestructiveButtonBlock(self.actionSheetCancelButton);
+        if (self.config.modelDestructiveButtonBlock) self.config.modelDestructiveButtonBlock(destructiveButton);
         
         actionSheetViewHeight += CGRectGetHeight(destructiveButton.frame);
     }

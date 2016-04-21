@@ -1373,9 +1373,11 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
     if (self.config.modelIsCustomButtonClickClose) [self closeAnimations];
 }
 
-- (void)actionSheetViewTapAction:(UITapGestureRecognizer *)tap{
+- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event{
     
     //拦截ActionSheetView点击响应
+    
+    if (self.config.modelIsActionSheetWindowTouchClose) [self closeAnimations];
 }
 
 #pragma mark start animations
@@ -1525,10 +1527,6 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
         _actionSheetView = [[UIScrollView alloc]initWithFrame:CGRectMake(0, 0, self.config.modelActionSheetMaxWidth, 0)];
         
         _actionSheetView.backgroundColor = [UIColor clearColor];
-        
-        UITapGestureRecognizer *actionSheetViewTap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(actionSheetViewTapAction:)];
-        
-        [_actionSheetView addGestureRecognizer:actionSheetViewTap];
     }
     
     return _actionSheetView;
@@ -1651,11 +1649,6 @@ static NSString * const LEEActionSheetShowNotification = @"LEEActionSheetShowNot
     if (notifyInfo[@"customActionSheet"] != self) [self.actionSheetViewController closeAnimations];
 }
 
-- (void)actionSheetWindowTapAction:(UITapGestureRecognizer *)tap{
-    
-    if (self.config.modelIsActionSheetWindowTouchClose) [self.actionSheetViewController closeAnimations];
-}
-
 #pragma mark LEEActionSheetManagerDelegate
 
 -(void)customActionSheetCloseDelegate{
@@ -1696,10 +1689,6 @@ static NSString * const LEEActionSheetShowNotification = @"LEEActionSheetShowNot
         _actionSheetWindow.windowLevel = UIWindowLevelAlert;
         
         _actionSheetWindow.hidden = YES;
-        
-        UITapGestureRecognizer *actionSheetWindowTap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(actionSheetWindowTapAction:)];
-        
-        [_actionSheetWindow addGestureRecognizer:actionSheetWindowTap];
     }
     
     return _actionSheetWindow;

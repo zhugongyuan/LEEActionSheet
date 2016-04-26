@@ -12,6 +12,8 @@
 
 #import "CustomViewController.h"
 
+#import "DemoTableViewController.h"
+
 @interface AppDelegate ()
 
 @end
@@ -44,7 +46,16 @@
     
     [tabBarController addChildViewController:customVC];
     
+    DemoTableViewController *demoTableVC = [[DemoTableViewController alloc] initWithStyle:UITableViewStyleGrouped];
+    
+    UINavigationController *demoTableNC = [[UINavigationController alloc] initWithRootViewController:demoTableVC];
+    
+    demoTableNC.tabBarItem = [[UITabBarItem alloc]initWithTitle:@"示例列表" image:[UIImage imageNamed:@""] tag:2];
+    
+    [tabBarController addChildViewController:demoTableNC];
+    
     self.window.rootViewController = tabBarController;
+    
     
     return YES;
 }

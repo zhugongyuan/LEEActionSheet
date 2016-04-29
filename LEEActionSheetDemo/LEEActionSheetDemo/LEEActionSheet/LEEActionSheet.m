@@ -941,6 +941,8 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
 
 @property (nonatomic , strong ) UIButton *actionSheetCancelButton;
 
+@property (nonatomic , strong ) NSMutableArray *actionSheetSubViewArray;
+
 @property (nonatomic , strong ) NSMutableArray *actionSheetButtonArray;
 
 @property (nonatomic , copy ) void (^closeAction)();
@@ -949,8 +951,11 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
 
 @implementation LEEActionSheetViewController
 {
-    CGFloat actionSheetViewHeight;
+    CGFloat actionSheetViewMaxWidth;
+    CGFloat actionSheetViewMaxHeight;
     CGFloat actionSheetViewWidth;
+    CGFloat actionSheetViewHeight;
+    CGFloat customViewHeight;
     UIDeviceOrientation currentOrientation;
     BOOL isShowingActionSheet;
 }
@@ -1015,11 +1020,11 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
 
 - (void)updateOrientationLayout{
     
-    self.config.LeeCustomActionSheetMaxHeight(CGRectGetHeight([[UIScreen mainScreen] bounds]) - 20.0f); //更新最大高度 (iOS 8 以上处理)
+    actionSheetViewMaxHeight = CGRectGetHeight([[UIScreen mainScreen] bounds]) >  CGRectGetWidth([[UIScreen mainScreen] bounds]) ? self.config.modelActionSheetMaxHeight : CGRectGetHeight([[UIScreen mainScreen] bounds]) - 20.0f; //更新最大高度 (iOS 8 以上处理)
     
     CGRect actionSheetViewFrame = self.actionSheetView.frame;
     
-    actionSheetViewFrame.size.height = actionSheetViewHeight > self.config.modelActionSheetMaxHeight ? self.config.modelActionSheetMaxHeight : actionSheetViewHeight;
+    actionSheetViewFrame.size.height = actionSheetViewHeight > actionSheetViewMaxHeight ? actionSheetViewMaxHeight : actionSheetViewHeight;
     
     actionSheetViewFrame.origin.y = CGRectGetHeight(self.view.frame);
     
@@ -1036,7 +1041,7 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
 
 - (void)updateOrientationLayoutWithInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation{
     
-    self.config.LeeCustomActionSheetMaxHeight(UIDeviceOrientationIsLandscape(currentOrientation) ? CGRectGetWidth([[UIScreen mainScreen] bounds]) - 20.0f : CGRectGetHeight([[UIScreen mainScreen] bounds]) - 20.0f); //更新最大高度 (iOS 8 以下处理)
+    actionSheetViewMaxHeight = UIDeviceOrientationIsLandscape(currentOrientation) ? CGRectGetWidth([[UIScreen mainScreen] bounds]) - 20.0f : self.config.modelActionSheetMaxHeight; //更新最大高度 (iOS 8 以下处理)
     
     switch (interfaceOrientation) {
             
@@ -1044,7 +1049,7 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
         {
             CGRect actionSheetViewFrame = self.actionSheetView.frame;
             
-            actionSheetViewFrame.size.height = actionSheetViewHeight > self.config.modelActionSheetMaxHeight ? self.config.modelActionSheetMaxHeight : actionSheetViewHeight;;
+            actionSheetViewFrame.size.height = actionSheetViewHeight > actionSheetViewMaxHeight ? actionSheetViewMaxHeight : actionSheetViewHeight;;
             
             actionSheetViewFrame.origin.y = CGRectGetHeight(self.view.frame);
             
@@ -1064,7 +1069,7 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
         {
             CGRect actionSheetViewFrame = self.actionSheetView.frame;
             
-            actionSheetViewFrame.size.height = actionSheetViewHeight > self.config.modelActionSheetMaxHeight ? self.config.modelActionSheetMaxHeight : actionSheetViewHeight;;
+            actionSheetViewFrame.size.height = actionSheetViewHeight > actionSheetViewMaxHeight ? actionSheetViewMaxHeight : actionSheetViewHeight;;
             
             actionSheetViewFrame.origin.y = CGRectGetWidth(self.view.frame);
             
@@ -1084,7 +1089,7 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
         {
             CGRect actionSheetViewFrame = self.actionSheetView.frame;
             
-            actionSheetViewFrame.size.height = actionSheetViewHeight > self.config.modelActionSheetMaxHeight ? self.config.modelActionSheetMaxHeight : actionSheetViewHeight;;
+            actionSheetViewFrame.size.height = actionSheetViewHeight > actionSheetViewMaxHeight ? actionSheetViewMaxHeight : actionSheetViewHeight;;
             
             actionSheetViewFrame.origin.y = CGRectGetWidth(self.view.frame);
             
@@ -1126,6 +1131,57 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
 
 }
 
+- (void)updateActionSheetScrollViewSubViewsLayout{
+    
+    actionSheetViewHeight = 0.0f;
+    
+    actionSheetViewHeight += self.config.modelTopSubViewMargin;
+    
+    actionSheetViewWidth = self.config.modelActionSheetMaxWidth;
+    
+    for (UIView *subView in self.actionSheetSubViewArray) {
+        
+        CGRect subViewFrame = subView.frame;
+        
+        subViewFrame.origin.y = actionSheetViewHeight;
+        
+        if (subView == self.config.modelCustomContentView) customViewHeight = subViewFrame.size.height;
+        
+        subView.frame = subViewFrame;
+        
+        actionSheetViewHeight += subViewFrame.size.height;
+        
+        actionSheetViewHeight += self.config.modelSubViewMargin;
+    }
+    
+    if (self.actionSheetSubViewArray.count > 0) {
+        
+        actionSheetViewHeight -= self.config.modelTopSubViewMargin;
+        
+        actionSheetViewHeight += self.config.modelBottomSubViewMargin;
+    }
+    
+    for (UIButton *button in self.actionSheetButtonArray) {
+        
+        CGRect buttonFrame = button.frame;
+        
+        buttonFrame.origin.y = actionSheetViewHeight;
+        
+        button.frame = buttonFrame;
+        
+        actionSheetViewHeight += buttonFrame.size.height;
+    }
+    
+    self.actionSheetScrollView.contentSize = CGSizeMake(actionSheetViewWidth, actionSheetViewHeight);
+    
+    if (_actionSheetCancelButton) actionSheetViewHeight += CGRectGetHeight(self.actionSheetCancelButton.frame) + self.actionSheetCancelButton.frame.origin.y;
+    
+    if (iOS8) [self updateOrientationLayout]; //更新方向布局 iOS 8 以上处理
+    
+    if (!iOS8) [self updateOrientationLayoutWithInterfaceOrientation:self.interfaceOrientation]; //更新方向布局 iOS 8 以下处理
+}
+
+
 - (void)configActionSheet{
     
     actionSheetViewHeight = 0.0f;
@@ -1135,13 +1191,6 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
     [self.actionSheetView addSubview:self.actionSheetScrollView];
     
     [self.view addSubview: self.actionSheetView];
-    
-    //开始内部处理
-    
-    if (self.config.modelCustomSubViewsQueue.count > 0) {
-        
-        actionSheetViewHeight += self.config.modelTopSubViewMargin;
-    }
     
     for (NSDictionary *item in self.config.modelCustomSubViewsQueue) {
         
@@ -1155,6 +1204,8 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
                 UILabel *titleLabel = [[UILabel alloc]initWithFrame:CGRectMake(self.config.modelLeftSubViewMargin, actionSheetViewHeight, actionSheetViewWidth - self.config.modelLeftSubViewMargin - self.config.modelRightSubViewMargin, 0)];
                 
                 [self.actionSheetScrollView addSubview:titleLabel];
+                
+                [self.actionSheetSubViewArray addObject:titleLabel];
                 
                 titleLabel.textAlignment = NSTextAlignmentCenter;
                 
@@ -1178,8 +1229,6 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
                 
                 titleLabel.frame = titleLabelFrame;
                 
-                actionSheetViewHeight += titleLabelFrame.size.height + self.config.modelSubViewMargin;
-                
             }
                 break;
             case LEEActionSheetCustomSubViewTypeContent:
@@ -1190,6 +1239,8 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
                 UILabel *contentLabel = [[UILabel alloc]initWithFrame:CGRectMake(self.config.modelLeftSubViewMargin, actionSheetViewHeight, actionSheetViewWidth - self.config.modelLeftSubViewMargin - self.config.modelRightSubViewMargin, 0)];
                 
                 [self.actionSheetScrollView addSubview:contentLabel];
+                
+                [self.actionSheetSubViewArray addObject:contentLabel];
                 
                 contentLabel.textAlignment = NSTextAlignmentCenter;
                 
@@ -1212,9 +1263,6 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
                 contentLabelFrame.size.height = contentLabelRect.size.height;
                 
                 contentLabel.frame = contentLabelFrame;
-                
-                actionSheetViewHeight += contentLabelFrame.size.height + self.config.modelSubViewMargin;
-                
             }
                 break;
             case LEEActionSheetCustomSubViewTypeCustomView:
@@ -1226,11 +1274,15 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
                     
                     customContentViewFrame.origin.y = actionSheetViewHeight;
                     
+                    customViewHeight = customContentViewFrame.size.height;
+                    
                     self.config.modelCustomContentView.frame = customContentViewFrame;
                     
                     [self.actionSheetScrollView addSubview:self.config.modelCustomContentView];
                     
-                    actionSheetViewHeight += CGRectGetHeight(self.config.modelCustomContentView.frame) + self.config.modelSubViewMargin;
+                    [self.actionSheetSubViewArray addObject:self.config.modelCustomContentView];
+                    
+                    [self.config.modelCustomContentView addObserver: self forKeyPath: @"frame" options: NSKeyValueObservingOptionNew context: nil];
                 }
                 
             }
@@ -1239,13 +1291,6 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
                 break;
         }
         
-    }
-    
-    if (self.config.modelCustomSubViewsQueue.count > 0) {
-        
-        actionSheetViewHeight -= self.config.modelSubViewMargin;
-        
-        actionSheetViewHeight += self.config.modelBottomSubViewMargin;
     }
     
     if (self.config.modelDestructiveButtonTitleStr || self.config.modelDestructiveButtonAction || self.config.modelDestructiveButtonBlock) {
@@ -1270,9 +1315,9 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
         
         [self.actionSheetScrollView addSubview:destructiveButton];
         
-        if (self.config.modelDestructiveButtonBlock) self.config.modelDestructiveButtonBlock(destructiveButton);
+        [self.actionSheetButtonArray addObject:destructiveButton];
         
-        actionSheetViewHeight += CGRectGetHeight(destructiveButton.frame);
+        if (self.config.modelDestructiveButtonBlock) self.config.modelDestructiveButtonBlock(destructiveButton);
     }
     
     for (NSDictionary *buttonDic in self.config.modelButtonArray) {
@@ -1304,17 +1349,13 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
         [self.actionSheetButtonArray addObject:button];
         
         if (addButton) addButton(button);
-        
-        actionSheetViewHeight += CGRectGetHeight(button.frame);
     }
-    
-    self.actionSheetScrollView.contentSize = CGSizeMake(actionSheetViewWidth, actionSheetViewHeight);
     
     self.actionSheetScrollView.layer.cornerRadius = self.config.modelCornerRadius;
     
     if (self.config.modelCancelButtonTitleStr || self.config.modelCancelButtonAction || self.config.modelCancelButtonBlock) {
         
-        self.actionSheetCancelButton.frame = CGRectMake(0, actionSheetViewHeight += 10.0f, actionSheetViewWidth, 57.0f);
+        self.actionSheetCancelButton.frame = CGRectMake(0, 10.0f, actionSheetViewWidth, 57.0f);
         
         [self.actionSheetCancelButton.layer setBorderWidth:0.5f];
         
@@ -1337,13 +1378,9 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
         [self.actionSheetView addSubview:self.actionSheetCancelButton];
         
         if (self.config.modelCancelButtonBlock) self.config.modelCancelButtonBlock(self.actionSheetCancelButton);
-        
-        actionSheetViewHeight += CGRectGetHeight(self.actionSheetCancelButton.frame);
     }
     
-    if (iOS8) [self updateOrientationLayout]; //更新布局 iOS 8 以上处理
-    
-    if (!iOS8) [self updateOrientationLayoutWithInterfaceOrientation:self.interfaceOrientation]; //更新布局 iOS 8 以下处理
+    [self updateActionSheetScrollViewSubViewsLayout];
 
     //开启显示动画
     
@@ -1366,7 +1403,11 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
 
 - (void)buttonAction:(UIButton *)sender{
     
-    void (^buttonAction)() = self.config.modelButtonArray[[self.actionSheetButtonArray indexOfObject:sender]][@"actionblock"];
+    NSInteger index = [self.actionSheetButtonArray indexOfObject:sender];
+    
+    if (self.config.modelButtonArray.count != self.actionSheetButtonArray.count) index --;
+    
+    void (^buttonAction)() = self.config.modelButtonArray[index][@"actionblock"];
     
     if (buttonAction) buttonAction();
     
@@ -1375,9 +1416,14 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
 
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event{
     
-    //拦截ActionSheetView点击响应
+    if (self.config.modelIsActionSheetWindowTouchClose) [self closeAnimations]; //拦截ActionSheetView点击响应
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSString *,id> *)change context:(void *)context{
     
-    if (self.config.modelIsActionSheetWindowTouchClose) [self closeAnimations];
+    UIView *customView = (UIView *)object;
+    
+    if (customViewHeight != CGRectGetHeight(customView.frame)) [self updateActionSheetScrollViewSubViewsLayout];
 }
 
 #pragma mark start animations
@@ -1434,6 +1480,8 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
     __weak typeof(self) weakSelf = self;
     
     [self closeAnimationsWithCompletionBlock:^{
+        
+        [weakSelf.config.modelCustomContentView removeObserver:weakSelf forKeyPath:@"frame"];
         
         if (weakSelf.closeAction) weakSelf.closeAction();
     }];
@@ -1553,6 +1601,13 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
     if (!_actionSheetCancelButton) _actionSheetCancelButton = [UIButton buttonWithType:UIButtonTypeCustom];
     
     return _actionSheetCancelButton;
+}
+
+-(NSMutableArray *)actionSheetSubViewArray{
+    
+    if (!_actionSheetSubViewArray) _actionSheetSubViewArray = [NSMutableArray array];
+    
+    return _actionSheetSubViewArray;
 }
 
 -(NSMutableArray *)actionSheetButtonArray{

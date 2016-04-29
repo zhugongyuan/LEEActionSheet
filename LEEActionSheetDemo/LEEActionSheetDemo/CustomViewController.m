@@ -256,6 +256,19 @@
     
     [customView addSubview:customViewCloseButton];
     
+    UIButton *customViewChangeButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    
+    customViewChangeButton.frame = CGRectMake(0, 30, 150, 30);
+    
+    [customViewChangeButton setBackgroundColor:[UIColor blackColor]];
+    
+    [customViewChangeButton setTitle:@"改变自定义视图大小" forState:UIControlStateNormal];
+    
+    [customViewChangeButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    
+    [customViewChangeButton addTarget:self action:@selector(customViewChangeButtonAction:) forControlEvents:UIControlEventTouchUpInside];
+    
+    [customView addSubview:customViewChangeButton];
     
     [LEEActionSheet actionSheet].custom.config
     .LeeCustomTitle(^(UILabel *label){
@@ -301,16 +314,11 @@
         NSLog(@"点击了销毁按钮");
         
     })
-    .LeeCustomDestructiveButton(^(UIButton *button){
-    
-        //自定义销毁按钮
-    
-    })
     .LeeAddCustomButton(^(UIButton *button){
         
-        //添加自定义按钮 设置按钮字体颜色为红色(演示用)
+        //添加自定义按钮 设置按钮字体颜色为灰色(演示用)
         
-        [button setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
+        [button setTitleColor:[UIColor grayColor] forState:UIControlStateNormal];
         
     })
     .LeeAddCustomButton(^(UIButton *button){
@@ -340,6 +348,26 @@
     
 }
 
+#pragma mark - 自定义视图改变按钮点击事件
+
+- (void)customViewChangeButtonAction:(UIButton *)sender{
+    
+    UIView *customView = sender.superview;
+    
+    CGRect customViewFrame = customView.frame;
+    
+    if (customViewFrame.size.height == 200) {
+        
+        customViewFrame.size.height = 100;
+        
+    } else {
+        
+        customViewFrame.size.height = 200;
+    }
+    
+    customView.frame = customViewFrame;
+    
+}
 
 #pragma mark - 自定义视图关闭按钮点击事件
 

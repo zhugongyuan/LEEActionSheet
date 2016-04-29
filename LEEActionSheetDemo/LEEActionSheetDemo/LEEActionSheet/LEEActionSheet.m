@@ -1135,9 +1135,9 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
     
     actionSheetViewHeight = 0.0f;
     
-    actionSheetViewHeight += self.config.modelTopSubViewMargin;
-    
     actionSheetViewWidth = self.config.modelActionSheetMaxWidth;
+    
+    if (self.actionSheetSubViewArray.count > 0) actionSheetViewHeight += self.config.modelTopSubViewMargin;
     
     for (UIView *subView in self.actionSheetSubViewArray) {
         

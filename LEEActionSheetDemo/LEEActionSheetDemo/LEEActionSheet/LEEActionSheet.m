@@ -1156,7 +1156,7 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
     
     if (self.actionSheetSubViewArray.count > 0) {
         
-        actionSheetViewHeight -= self.config.modelTopSubViewMargin;
+        actionSheetViewHeight -= self.config.modelSubViewMargin;
         
         actionSheetViewHeight += self.config.modelBottomSubViewMargin;
     }
@@ -1174,7 +1174,7 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
     
     self.actionSheetScrollView.contentSize = CGSizeMake(actionSheetViewWidth, actionSheetViewHeight);
     
-    if (_actionSheetCancelButton) actionSheetViewHeight += CGRectGetHeight(self.actionSheetCancelButton.frame) + self.actionSheetCancelButton.frame.origin.y;
+    if (_actionSheetCancelButton) actionSheetViewHeight += CGRectGetHeight(self.actionSheetCancelButton.frame) + 10.0f;
     
     if (iOS8) [self updateOrientationLayout]; //更新方向布局 iOS 8 以上处理
     

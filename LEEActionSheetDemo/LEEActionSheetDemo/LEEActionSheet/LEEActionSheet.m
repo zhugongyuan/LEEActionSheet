@@ -1437,6 +1437,8 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
         self.actionSheetBackgroundImageView.image = [[self getCurrentKeyWindowImage] LeeActionSheet_ApplyTintEffectWithColor:self.config.modelActionSheetWindowBackGroundColor];
     }
     
+    [self.currentKeyWindow endEditing:YES]; //结束输入 收起键盘
+    
     isShowingActionSheet = YES; //显示ActionSheet
     
     self.actionSheetWindow.hidden = NO;

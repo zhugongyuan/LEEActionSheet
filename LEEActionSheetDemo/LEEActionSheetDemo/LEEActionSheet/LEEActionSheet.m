@@ -169,6 +169,10 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
     self = [super init];
     if (self) {
         
+        CGFloat screenWidth = CGRectGetWidth([[UIScreen mainScreen] bounds]);
+        
+        CGFloat screenHeight = CGRectGetHeight([[UIScreen mainScreen] bounds]);
+        
         //初始化默认值
         
         _modelCornerRadius = 12.0f; //默认ActionSheet圆角半径
@@ -177,8 +181,8 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
         _modelBottomSubViewMargin = 20.0f; //默认ActionSheet底部距离控件的间距
         _modelLeftSubViewMargin = 10.0f; //默认ActionSheet左侧距离控件的间距
         _modelRightSubViewMargin = 10.0f; //默认ActionSheet右侧距离控件的间距
-        _modelActionSheetMaxWidth = CGRectGetWidth([[UIScreen mainScreen] bounds]) - 20; //默认最大宽度屏幕宽度减20 (去除左右10间距)
-        _modelActionSheetMaxHeight = CGRectGetHeight([[UIScreen mainScreen] bounds]) - 20; //默认最大高度屏幕高度减20 (去除上下10间距)
+        _modelActionSheetMaxWidth = (screenWidth > screenHeight ? screenHeight : screenWidth) - 20.0f; //默认最大宽度屏幕宽度减20 (去除左右10间距)
+        _modelActionSheetMaxHeight = (screenWidth > screenHeight ? screenWidth : screenHeight) - 20.0f; //默认最大高度屏幕高度减20 (去除上下10间距)
         _modelActionSheetOpenAnimationDuration = 0.3f; //默认ActionSheet打开动画时长
         _modelActionSheetCloseAnimationDuration = 0.2f; //默认ActionSheet关闭动画时长
         
@@ -674,6 +678,8 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
 
 @property (nonatomic , strong ) NSMutableDictionary *actionSheetViewButtonIndexDic;
 
+@property (nonatomic , strong ) UIWindow *currentKeyWindow;
+
 @end
 
 @implementation LEEActionSheetSystem
@@ -683,6 +689,8 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
     _config = nil;
     
     _actionSheetViewButtonIndexDic = nil;
+    
+    _currentKeyWindow = nil;
 }
 
 - (instancetype)init
@@ -759,9 +767,9 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
             
         } else {
             
-            if ([UIApplication sharedApplication].keyWindow.rootViewController) {
+            if (self.currentKeyWindow) {
                 
-                [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:alertController animated:YES completion:^{}];
+                [[self getPresentedViewController:self.currentKeyWindow.rootViewController] presentViewController:alertController animated:YES completion:^{}];
                 
             } else {
                 
@@ -769,6 +777,7 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
                  * keywindow的rootViewController 获取不到 建议传入视图控制器对象
                  *
                  * 建议: XXX.system.config.XXX().XXX().showFromViewController(视图控制器对象);
+                 * 或者: 在appDelegate内设置主窗口 [LEEActionSheet configMainWindow:self.window];
                  */
                 NSAssert(self, @"LEEActionSheet : keywindow的rootViewController 获取不到 建议传入视图控制器对象");
             }
@@ -855,6 +864,21 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
     return nil;
 }
 
+#pragma mark Tool
+
+- (UIViewController *)getPresentedViewController:(UIViewController *)vc{
+    
+    if (vc.presentedViewController) {
+        
+        return [self getPresentedViewController:vc.presentedViewController];
+        
+    } else {
+        
+        return vc;
+    }
+    
+}
+
 #pragma mark UIActionSheetDelegate
 
 - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex{
@@ -919,6 +943,24 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
     if (!_actionSheetViewButtonIndexDic) _actionSheetViewButtonIndexDic = [NSMutableDictionary dictionary];
     
     return _actionSheetViewButtonIndexDic;
+}
+
+- (UIWindow *)currentKeyWindow{
+    
+    if (!_currentKeyWindow) _currentKeyWindow = [LEEActionSheet shareActionSheetManager].mainWindow;
+    
+    if (!_currentKeyWindow) _currentKeyWindow = [UIApplication sharedApplication].keyWindow;
+    
+    if (_currentKeyWindow.windowLevel != UIWindowLevelNormal) {
+        
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"windowLevel == %ld AND hidden == 0 " , UIWindowLevelNormal];
+        
+        _currentKeyWindow = [[UIApplication sharedApplication].windows filteredArrayUsingPredicate:predicate].firstObject;
+    }
+    
+    if (_currentKeyWindow) if (![LEEActionSheet shareActionSheetManager].mainWindow) [LEEActionSheet shareActionSheetManager].mainWindow = _currentKeyWindow;
+    
+    return _currentKeyWindow;
 }
 
 @end
@@ -1299,6 +1341,8 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
         
         destructiveButton.frame = CGRectMake(0, actionSheetViewHeight, actionSheetViewWidth, 57.0f);
         
+        [destructiveButton setClipsToBounds:YES];
+        
         [destructiveButton.layer setBorderWidth:0.5f];
         
         [destructiveButton.layer setBorderColor:[[UIColor grayColor] colorWithAlphaComponent:0.2f].CGColor];
@@ -1309,7 +1353,11 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
         
         [destructiveButton setTitleColor:[UIColor colorWithRed:255/255.0f green:59/255.0f blue:48/255.0f alpha:1.0f] forState:UIControlStateNormal];
         
-        [destructiveButton setTitleColor:[UIColor colorWithRed:255/255.0f green:59/255.0f blue:48/255.0f alpha:0.5f] forState:UIControlStateHighlighted];
+        [destructiveButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateHighlighted];
+        
+        [destructiveButton setBackgroundImage:[self getImageWithColor:[UIColor clearColor]] forState:UIControlStateNormal];
+        
+        [destructiveButton setBackgroundImage:[self getImageWithColor:[[UIColor lightGrayColor] colorWithAlphaComponent:0.2f]] forState:UIControlStateHighlighted];
         
         [destructiveButton addTarget:self action:@selector(destructiveButtonAction:) forControlEvents:UIControlEventTouchUpInside];
         
@@ -1330,6 +1378,8 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
         
         button.frame = CGRectMake(0, actionSheetViewHeight, actionSheetViewWidth, 57.0f);
         
+        [button setClipsToBounds:YES];
+        
         [button.layer setBorderWidth:0.5f];
         
         [button.layer setBorderColor:[[UIColor grayColor] colorWithAlphaComponent:0.2f].CGColor];
@@ -1341,6 +1391,10 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
         [button setTitleColor:[UIColor colorWithRed:0/255.0f green:122/255.0f blue:255/255.0f alpha:1.0f] forState:UIControlStateNormal];
         
         [button setTitleColor:[UIColor lightGrayColor] forState:UIControlStateHighlighted];
+        
+        [button setBackgroundImage:[self getImageWithColor:[UIColor clearColor]] forState:UIControlStateNormal];
+        
+        [button setBackgroundImage:[self getImageWithColor:[[UIColor lightGrayColor] colorWithAlphaComponent:0.2f]] forState:UIControlStateHighlighted];
         
         [button addTarget:self action:@selector(buttonAction:) forControlEvents:UIControlEventTouchUpInside];
         
@@ -1357,6 +1411,8 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
         
         self.actionSheetCancelButton.frame = CGRectMake(0, 10.0f, actionSheetViewWidth, 57.0f);
         
+        [self.actionSheetCancelButton setClipsToBounds:YES];
+        
         [self.actionSheetCancelButton.layer setBorderWidth:0.5f];
         
         [self.actionSheetCancelButton.layer setBorderColor:[[UIColor grayColor] colorWithAlphaComponent:0.2f].CGColor];
@@ -1372,6 +1428,10 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
         [self.actionSheetCancelButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateHighlighted];
         
         [self.actionSheetCancelButton setBackgroundColor:self.config.modelActionSheetViewColor];
+        
+        [self.actionSheetCancelButton setBackgroundImage:[self getImageWithColor:self.config.modelActionSheetViewColor] forState:UIControlStateNormal];
+        
+        [self.actionSheetCancelButton setBackgroundImage:[self getImageWithColor:[[UIColor lightGrayColor] colorWithAlphaComponent:0.2f]] forState:UIControlStateHighlighted];
         
         [self.actionSheetCancelButton addTarget:self action:@selector(cancelButtonAction:) forControlEvents:UIControlEventTouchUpInside];
         
@@ -1543,6 +1603,25 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
     return image;
 }
 
+- (UIImage *)getImageWithColor:(UIColor *)color {
+    
+    CGRect rect = CGRectMake(0.0f, 0.0f, 1.0f, 1.0f);
+    
+    UIGraphicsBeginImageContext(rect.size);
+    
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    
+    CGContextSetFillColorWithColor(context, [color CGColor]);
+    
+    CGContextFillRect(context, rect);
+    
+    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+    
+    UIGraphicsEndImageContext();
+    
+    return image;
+}
+
 - (CGRect)getLabelTextHeight:(UILabel *)label{
     
     CGRect rect = [label.text boundingRectWithSize:CGSizeMake(CGRectGetWidth(label.frame), MAXFLOAT) options:NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName : label.font} context:nil];
@@ -1557,6 +1636,13 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
     if (!_currentKeyWindow) _currentKeyWindow = [LEEActionSheet shareActionSheetManager].mainWindow;
     
     if (!_currentKeyWindow) _currentKeyWindow = [UIApplication sharedApplication].keyWindow;
+    
+    if (_currentKeyWindow.windowLevel != UIWindowLevelNormal) {
+        
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"windowLevel == %ld AND hidden == 0 " , UIWindowLevelNormal];
+        
+        _currentKeyWindow = [[UIApplication sharedApplication].windows filteredArrayUsingPredicate:predicate].firstObject;
+    }
     
     if (_currentKeyWindow) if (![LEEActionSheet shareActionSheetManager].mainWindow) [LEEActionSheet shareActionSheetManager].mainWindow = _currentKeyWindow;
     

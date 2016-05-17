@@ -45,9 +45,13 @@
 
 - (void)openShare{
     
+    CGFloat screenWidth = CGRectGetWidth([[UIScreen mainScreen] bounds]);
+    
+    CGFloat screenHeight = CGRectGetHeight([[UIScreen mainScreen] bounds]);
+    
     //初始化分享视图
     
-    ShareView *shareView = [[ShareView alloc] initWithFrame:CGRectMake(10, 0, CGRectGetWidth([[UIScreen mainScreen] bounds]) - 40.0f, 0)];
+    ShareView *shareView = [[ShareView alloc] initWithFrame:CGRectMake(10, 0, (screenWidth > screenHeight ? screenHeight : screenWidth) - 40.0f, 0)];
     
     shareView.OpenShareBlock = ^(ShareType type){
         

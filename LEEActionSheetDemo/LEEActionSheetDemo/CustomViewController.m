@@ -15,6 +15,12 @@
 #import "LEEActionSheet.h"
 
 @implementation CustomViewController
+{
+    
+    CGFloat screenWidth; //屏幕宽度
+    
+    CGFloat screenHeight; //屏幕高度
+}
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -232,6 +238,10 @@
 
 - (void)button5Action{
     
+    screenWidth = CGRectGetWidth([[UIScreen mainScreen] bounds]);
+    
+    screenHeight = CGRectGetHeight([[UIScreen mainScreen] bounds]);
+    
     /**
      下面为全部自定义设置方法的演示说明
      */
@@ -330,8 +340,8 @@
         
     })
     .LeeCustomCornerRadius(15.0f)  //设置自定义ActionSheet的圆角半径 默认为 15
-    .LeeCustomActionSheetMaxWidth(CGRectGetWidth([[UIScreen mainScreen] bounds]) - 20.0f)   //设置自定义ActionSheet的最大宽度 默认为屏幕宽度减20左右边距
-    .LeeCustomActionSheetMaxHeight(CGRectGetHeight([[UIScreen mainScreen] bounds]) - 20.0f)   //设置自定义ActionSheet的最大高度 默认为屏幕高度减20上下边距
+    .LeeCustomActionSheetMaxWidth((screenWidth > screenHeight ? screenHeight : screenWidth) - 20.0f)   //设置自定义ActionSheet的最大宽度 默认为屏幕宽度减20左右边距
+    .LeeCustomActionSheetMaxHeight((screenWidth > screenHeight ? screenWidth : screenHeight) - 20.0f)   //设置自定义ActionSheet的最大高度 默认为屏幕高度减20上下边距
     .LeeCustomSubViewMargin(10.0f)  //设置自定义ActionSheet的子控件上下边距 默认为 10
     .LeeCustomTopSubViewMargin(20.0f)   //设置自定义ActionSheet的第一个子控件距离ActionSheet上边缘的边距 默认 20
     .LeeCustomBottomSubViewMargin(20.0f)   //设置自定义ActionSheet的第一个子控件距离ActionSheet下边缘的边距 (如果有按钮存在 则是距离按钮部分的边距) 默认 20
@@ -352,6 +362,8 @@
 
 - (void)customViewChangeButtonAction:(UIButton *)sender{
     
+    [UIView beginAnimations:@"" context:NULL];
+    
     UIView *customView = sender.superview;
     
     CGRect customViewFrame = customView.frame;
@@ -366,6 +378,8 @@
     }
     
     customView.frame = customViewFrame;
+    
+    [UIView commitAnimations];
     
 }
 

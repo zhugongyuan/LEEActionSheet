@@ -134,6 +134,8 @@ typedef LEEActionSheetConfigModel *(^LEEConfigActionSheetToViewController)(UIVie
 @property (nonatomic , copy , readonly ) LEEConfigActionSheetToFloat LeeCustomLeftSubViewMargin;
 /** 设置 ActionSheet 自定义右侧距离控件的间距 -> 格式: .LeeCustomRightSubViewMargin(0.0f) */
 @property (nonatomic , copy , readonly ) LEEConfigActionSheetToFloat LeeCustomRightSubViewMargin;
+/** 设置 ActionSheet 自定义ActionSheet底部距离屏幕的间距 -> 格式: .LeeCustomActionSheetBottomMargin(0.0f) */
+@property (nonatomic , copy , readonly ) LEEConfigActionSheetToFloat LeeCustomActionSheetBottomMargin;
 /** 设置 ActionSheet 自定义ActionSheet最大宽度 -> 格式: .LeeCustomActionSheetMaxWidth(0.0f) */
 @property (nonatomic , copy , readonly ) LEEConfigActionSheetToFloat LeeCustomActionSheetMaxWidth;
 /** 设置 ActionSheet 自定义ActionSheet最大高度 -> 格式: .LeeCustomActionSheetMaxHeight(0.0f) */

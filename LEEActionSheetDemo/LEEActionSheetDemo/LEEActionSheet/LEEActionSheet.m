@@ -129,6 +129,7 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
 @property (nonatomic , assign , readonly ) CGFloat modelBottomSubViewMargin;
 @property (nonatomic , assign , readonly ) CGFloat modelLeftSubViewMargin;
 @property (nonatomic , assign , readonly ) CGFloat modelRightSubViewMargin;
+@property (nonatomic , assign , readonly ) CGFloat modelActionSheetBottomMargin;
 @property (nonatomic , assign , readonly ) CGFloat modelActionSheetMaxWidth;
 @property (nonatomic , assign , readonly ) CGFloat modelActionSheetMaxHeight;
 @property (nonatomic , assign , readonly ) CGFloat modelActionSheetOpenAnimationDuration;
@@ -181,6 +182,7 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
         _modelBottomSubViewMargin = 20.0f; //默认ActionSheet底部距离控件的间距
         _modelLeftSubViewMargin = 10.0f; //默认ActionSheet左侧距离控件的间距
         _modelRightSubViewMargin = 10.0f; //默认ActionSheet右侧距离控件的间距
+        _modelActionSheetBottomMargin = 10.0f; //默认ActionSheet底部距离屏幕的间距
         _modelActionSheetMaxWidth = (screenWidth > screenHeight ? screenHeight : screenWidth) - 20.0f; //默认最大宽度屏幕宽度减20 (去除左右10间距)
         _modelActionSheetMaxHeight = (screenWidth > screenHeight ? screenWidth : screenHeight) - 20.0f; //默认最大高度屏幕高度减20 (去除上下10间距)
         _modelActionSheetOpenAnimationDuration = 0.3f; //默认ActionSheet打开动画时长
@@ -498,6 +500,19 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
     
 }
 
+- (LEEConfigActionSheetToFloat)LeeCustomActionSheetBottomMargin{
+    
+    __weak typeof(self) weakSelf = self;
+    
+    return ^(CGFloat number){
+        
+        _modelActionSheetBottomMargin = number;
+        
+        return weakSelf;
+    };
+    
+}
+
 -(LEEConfigActionSheetToFloat)LeeCustomActionSheetMaxWidth{
     
     __weak typeof(self) weakSelf = self;
@@ -728,6 +743,7 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
                 
                 if (cancelButtonAction) cancelButtonAction();
                 
+                if (weakSelf) weakSelf.config = nil;
             }];
             
             [alertController addAction:alertAction];
@@ -741,6 +757,7 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
                 
                 if (destructiveButtonAction) destructiveButtonAction();
                 
+                if (weakSelf) weakSelf.config = nil;
             }];
             
             [alertController addAction:alertAction];
@@ -756,6 +773,7 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
                 
                 if (buttonAction) buttonAction();
                 
+                if (weakSelf) weakSelf.config = nil;
             }];
             
             [alertController addAction:alertAction];
@@ -783,10 +801,6 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
             }
             
         }
-        
-        //释放模型
-        
-        _config = nil;
         
     } else {
         
@@ -1070,7 +1084,7 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
     
     actionSheetViewFrame.origin.y = CGRectGetHeight(self.view.frame);
     
-    if (isShowingActionSheet) actionSheetViewFrame.origin.y = (CGRectGetHeight(self.view.frame) - actionSheetViewFrame.size.height) - 10.0f;
+    if (isShowingActionSheet) actionSheetViewFrame.origin.y = (CGRectGetHeight(self.view.frame) - actionSheetViewFrame.size.height) - self.config.modelActionSheetBottomMargin;
     
     self.actionSheetView.frame = actionSheetViewFrame;
     
@@ -1095,7 +1109,7 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
             
             actionSheetViewFrame.origin.y = CGRectGetHeight(self.view.frame);
             
-            if (isShowingActionSheet) actionSheetViewFrame.origin.y = (CGRectGetHeight(self.view.frame) - actionSheetViewFrame.size.height) - 10.0f;
+            if (isShowingActionSheet) actionSheetViewFrame.origin.y = (CGRectGetHeight(self.view.frame) - actionSheetViewFrame.size.height) - self.config.modelActionSheetBottomMargin;
             
             self.actionSheetView.frame = actionSheetViewFrame;
             
@@ -1115,7 +1129,7 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
             
             actionSheetViewFrame.origin.y = CGRectGetWidth(self.view.frame);
             
-            if (isShowingActionSheet) actionSheetViewFrame.origin.y = (CGRectGetWidth(self.view.frame) - actionSheetViewFrame.size.height) - 10.0f;
+            if (isShowingActionSheet) actionSheetViewFrame.origin.y = (CGRectGetWidth(self.view.frame) - actionSheetViewFrame.size.height) - self.config.modelActionSheetBottomMargin;
             
             self.actionSheetView.frame = actionSheetViewFrame;
             
@@ -1135,7 +1149,7 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
             
             actionSheetViewFrame.origin.y = CGRectGetWidth(self.view.frame);
             
-            if (isShowingActionSheet) actionSheetViewFrame.origin.y = (CGRectGetWidth(self.view.frame) - actionSheetViewFrame.size.height) - 10.0f;
+            if (isShowingActionSheet) actionSheetViewFrame.origin.y = (CGRectGetWidth(self.view.frame) - actionSheetViewFrame.size.height) - self.config.modelActionSheetBottomMargin;
             
             self.actionSheetView.frame = actionSheetViewFrame;
             

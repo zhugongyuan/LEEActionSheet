@@ -157,8 +157,7 @@
         
     })
     .LeeShow();
-    
-    
+
 }
 
 
@@ -348,6 +347,7 @@
     .LeeCustomBottomSubViewMargin(20.0f)   //设置自定义ActionSheet的第一个子控件距离ActionSheet下边缘的边距 (如果有按钮存在 则是距离按钮部分的边距) 默认 20
     .LeeCustomLeftSubViewMargin(20.0f)   //设置自定义ActionSheet的子控件距离左侧边缘间距 //默认为20
     .LeeCustomRightSubViewMargin(20.0f)   //设置自定义ActionSheet的子控件距离右侧边缘间距 //默认为20
+    .LeeCustomActionSheetBottomMargin(10.0f) //设置自定义ActionSheet距离屏幕底部的间距 //默认为10
     .LeeCustomActionSheetOpenAnimationDuration(0.3f)   //设置自定义ActionSheet的打开动画效果时长 默认0.3秒
     .LeeCustomActionSheetCloseAnimationDuration(0.2f)   //设置自定义ActionSheet的关闭动画效果时长 默认0.2秒
     .LeeCustomActionSheetViewColor([UIColor whiteColor])   //设置自定义ActionSheet的颜色 默认为白色

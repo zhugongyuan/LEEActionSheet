@@ -51,7 +51,7 @@
     
     //初始化分享视图
     
-    ShareView *shareView = [[ShareView alloc] initWithFrame:CGRectMake(10, 0, (screenWidth > screenHeight ? screenHeight : screenWidth) - 40.0f, 0)];
+    ShareView *shareView = [[ShareView alloc] initWithFrame:CGRectMake(10, 0, (screenWidth > screenHeight ? screenHeight : screenWidth) - 40.0f, 0) InfoArray:nil MaxLineNumber:2 MaxSingleCount:3];
     
     shareView.OpenShareBlock = ^(ShareType type){
         

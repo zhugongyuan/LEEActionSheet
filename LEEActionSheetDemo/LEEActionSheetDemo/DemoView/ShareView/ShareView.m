@@ -116,11 +116,11 @@
                        @{@"title" : @"QQ空间" , @"image" : @"popup_share_kongjian" , @"highlightedImage" : @"popup_share_kongjian_night" , @"type" : [NSNumber numberWithInteger:ShareTypeToQZone]} ,
                        
                        /** 结束 */
-                       
+//                       
                        @{@"title" : @"新浪微博" , @"image" : @"popup_share_sina" , @"highlightedImage" : @"popup_share_sina_night" , @"type" : [NSNumber numberWithInteger:ShareTypeToSina]} ,
-                       
+//
                        @{@"title" : @"QQ好友" , @"image" : @"popup_share_qq" , @"highlightedImage" : @"popup_share_qq_night" , @"type" : [NSNumber numberWithInteger:ShareTypeToQQFriend]} ,
-                       
+//
                        @{@"title" : @"QQ空间" , @"image" : @"popup_share_kongjian" , @"highlightedImage" : @"popup_share_kongjian_night" , @"type" : [NSNumber numberWithInteger:ShareTypeToQZone]} ,
                        
                        @{@"title" : @"腾讯微博" , @"image" : @"popup_share_ten Weibo" , @"highlightedImage" : @"popup_share_ten Weibo_night" , @"type" : [NSNumber numberWithInteger:ShareTypeToTencetnwb]}];
@@ -227,6 +227,8 @@
     NSInteger lineNumber = ceilf((double)_infoArray.count / singleMaxCount); //所需行数 小数向上取整
     
     NSInteger singleCount = ceilf((double)_infoArray.count / lineNumber); //单行个数 小数向上取整
+    
+    singleCount = singleCount >= _infoArray.count ? singleCount : singleMaxCount ; //处理单行个数
     
     CGFloat buttonWidth = self.width / singleCount;
     

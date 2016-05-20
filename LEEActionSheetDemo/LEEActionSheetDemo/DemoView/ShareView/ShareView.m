@@ -102,7 +102,8 @@
     
     if (!_infoArray) {
         
-        _infoArray = @[@{@"title" : @"微信" , @"image" : @"popup_share_weixing" , @"highlightedImage" : @"popup_share_weixing_night" , @"type" : [NSNumber numberWithInteger:ShareTypeToWXFriend]} ,
+        _infoArray = @[
+                       @{@"title" : @"微信" , @"image" : @"popup_share_weixing" , @"highlightedImage" : @"popup_share_weixing_night" , @"type" : [NSNumber numberWithInteger:ShareTypeToWXFriend]} ,
                        
                        @{@"title" : @"微信朋友圈" , @"image" : @"popup_share_penyouquan" , @"highlightedImage" : @"popup_share_penyouquan_night" , @"type" : [NSNumber numberWithInteger:ShareTypeToWXQuan]} ,
                        
@@ -178,6 +179,8 @@
         
         if (index % (lineMaxNumber * singleMaxCount) == 0) {
             
+            //初始化页视图
+            
             pageView = [[UIView alloc] init];
             
             [_scrollView addSubview:pageView];
@@ -185,6 +188,8 @@
             [_pageViewArray addObject:pageView];
             
         }
+        
+        //初始化按钮
         
         ShareButton *button = [ShareButton buttonWithType:UIButtonTypeCustom];
         

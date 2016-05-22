@@ -134,6 +134,7 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
 @property (nonatomic , assign , readonly ) CGFloat modelActionSheetMaxHeight;
 @property (nonatomic , assign , readonly ) CGFloat modelActionSheetOpenAnimationDuration;
 @property (nonatomic , assign , readonly ) CGFloat modelActionSheetCloseAnimationDuration;
+@property (nonatomic , assign , readonly ) CGFloat modelActionSheetCustomBackGroundStypeColorAlpha;
 
 @property (nonatomic , strong , readonly ) UIColor *modelActionSheetViewColor;
 @property (nonatomic , strong , readonly ) UIColor *modelActionSheetWindowBackGroundColor;
@@ -187,6 +188,7 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
         _modelActionSheetMaxHeight = (screenWidth > screenHeight ? screenWidth : screenHeight) - 20.0f; //默认最大高度屏幕高度减20 (去除上下10间距)
         _modelActionSheetOpenAnimationDuration = 0.3f; //默认ActionSheet打开动画时长
         _modelActionSheetCloseAnimationDuration = 0.2f; //默认ActionSheet关闭动画时长
+        _modelActionSheetCustomBackGroundStypeColorAlpha = 0.6f; //自定义背景样式渲染颜色透明度 默认为半透明背景样式 透明度为0.6f
         
         _modelActionSheetViewColor = [UIColor whiteColor]; //默认ActionSheet颜色
         _modelActionSheetWindowBackGroundColor = [UIColor blackColor]; //默认ActionSheet背景半透明或者模糊颜色
@@ -591,26 +593,30 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
     
 }
 
--(LEEConfigActionSheet)LeeCustomActionSheetViewBackGroundStypeTranslucent{
+-(LEEConfigActionSheetToFloat)LeeCustomActionSheetViewBackGroundStypeTranslucent{
     
     __weak typeof(self) weakSelf = self;
     
-    return ^(){
+    return ^(CGFloat number){
         
         _modelActionSheetCustomBackGroundStype = LEEActionSheetCustomBackGroundStypeTranslucent;
+        
+        _modelActionSheetCustomBackGroundStypeColorAlpha = number;
         
         return weakSelf;
     };
     
 }
 
--(LEEConfigActionSheet)LeeCustomActionSheetViewBackGroundStypeBlur{
+-(LEEConfigActionSheetToFloat)LeeCustomActionSheetViewBackGroundStypeBlur{
     
     __weak typeof(self) weakSelf = self;
     
-    return ^(){
+    return ^(CGFloat number){
         
         _modelActionSheetCustomBackGroundStype = LEEActionSheetCustomBackGroundStypeBlur;
+        
+        _modelActionSheetCustomBackGroundStypeColorAlpha = number;
         
         return weakSelf;
     };
@@ -1508,7 +1514,7 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
         
         self.actionSheetBackgroundImageView.alpha = 0.0f;
         
-        self.actionSheetBackgroundImageView.image = [[self getCurrentKeyWindowImage] LeeActionSheet_ApplyTintEffectWithColor:self.config.modelActionSheetWindowBackGroundColor];
+        self.actionSheetBackgroundImageView.image = [[self getCurrentKeyWindowImage] LeeActionSheet_ApplyBlurWithRadius:10.0f tintColor:[self.config.modelActionSheetWindowBackGroundColor colorWithAlphaComponent:self.config.modelActionSheetCustomBackGroundStypeColorAlpha] saturationDeltaFactor:1.0f maskImage:nil];
     }
     
     [self.currentKeyWindow endEditing:YES]; //结束输入 收起键盘
@@ -1525,7 +1531,7 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
         
         [UIView animateWithDuration:self.config.modelActionSheetOpenAnimationDuration animations:^{
             
-            weakSelf.view.backgroundColor = [weakSelf.view.backgroundColor colorWithAlphaComponent:0.6f];
+            weakSelf.view.backgroundColor = [weakSelf.config.modelActionSheetWindowBackGroundColor colorWithAlphaComponent:weakSelf.config.modelActionSheetCustomBackGroundStypeColorAlpha];
             
             if (iOS8) [self updateOrientationLayout]; //更新布局 iOS 8 以上处理
             

@@ -354,7 +354,8 @@
     .LeeCustomActionSheetViewBackGroundColor([UIColor blackColor])   //设置自定义ActionSheet的半透明或者模糊的背景渲染颜色
     .LeeCustomActionSheetTouchClose()   //设置自定义ActionSheet的背景点击关闭功能
     .LeeCustomButtonClickNotClose()   //设置自定义ActionSheet的自定义按钮点击不关闭ActionSheet
-    .LeeCustomActionSheetViewBackGroundStypeBlur()   //设置自定义ActionSheet的背景样式为高斯模糊样式 如果不设置这项 默认为半透明样式
+//    .LeeCustomActionSheetViewBackGroundStypeTranslucent(0.6f)   //设置自定义ActionSheet的背景样式为半透明样式 并传入透明度 默认为0.6f
+    .LeeCustomActionSheetViewBackGroundStypeBlur(0.6f)   //设置自定义ActionSheet的背景样式为高斯模糊样式 并传入透明度 默认为0.6f (如果不设置这项 默认为半透明样式 0.6f透明度)
     .LeeShow();    //显示ActionSheet
     
 }

@@ -150,10 +150,10 @@ typedef LEEActionSheetConfigModel *(^LEEConfigActionSheetToViewController)(UIVie
 /** 设置 ActionSheet 自定义ActionSheet半透明或模糊背景颜色 -> 格式: .LeeCustomActionSheetViewBackGroundColor(UIColor) */
 @property (nonatomic , copy , readonly ) LEEConfigActionSheetToColor LeeCustomActionSheetViewBackGroundColor;
 
-/** 设置 ActionSheet 自定义ActionSheet半透明背景样式 [默认] -> 格式: .LeeCustomActionSheetViewBackGroundStypeTranslucent() */
-@property (nonatomic , copy , readonly ) LEEConfigActionSheet LeeCustomActionSheetViewBackGroundStypeTranslucent;
-/** 设置 ActionSheet 自定义ActionSheet模糊背景样式 -> 格式: .LeeCustomActionSheetViewBackGroundStypeBlur() */
-@property (nonatomic , copy , readonly ) LEEConfigActionSheet LeeCustomActionSheetViewBackGroundStypeBlur;
+/** 设置 ActionSheet 自定义ActionSheet半透明背景样式及透明度 [默认] -> 格式: .LeeCustomActionSheetViewBackGroundStypeTranslucent(0.6f) */
+@property (nonatomic , copy , readonly ) LEEConfigActionSheetToFloat LeeCustomActionSheetViewBackGroundStypeTranslucent;
+/** 设置 ActionSheet 自定义ActionSheet模糊背景样式及透明度 -> 格式: .LeeCustomActionSheetViewBackGroundStypeBlur(0.6f) */
+@property (nonatomic , copy , readonly ) LEEConfigActionSheetToFloat LeeCustomActionSheetViewBackGroundStypeBlur;
 
 /** 设置 ActionSheet 自定义ActionSheet背景触摸关闭 -> 格式: .LeeCustomActionSheetTouchClose() */
 @property (nonatomic , copy , readonly ) LEEConfigActionSheet LeeCustomActionSheetTouchClose;

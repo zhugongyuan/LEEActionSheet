@@ -1074,7 +1074,7 @@ typedef NS_ENUM(NSInteger, LEEActionSheetCustomSubViewType) {
     
     if (self.config.modelActionSheetCustomBackGroundStype == LEEActionSheetCustomBackGroundStypeBlur) {
         
-        self.actionSheetBackgroundImageView.image = [[self getCurrentKeyWindowImage] LeeActionSheet_ApplyTintEffectWithColor:self.config.modelActionSheetWindowBackGroundColor];;
+        self.actionSheetBackgroundImageView.image = [[self getCurrentKeyWindowImage] LeeActionSheet_ApplyTintEffectWithColor:[self.config.modelActionSheetWindowBackGroundColor colorWithAlphaComponent:self.config.modelActionSheetCustomBackGroundStypeColorAlpha]];
     }
     
     if (iOS8) [self updateOrientationLayout];

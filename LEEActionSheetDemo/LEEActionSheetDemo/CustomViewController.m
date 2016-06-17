@@ -292,6 +292,8 @@
         
         //自定义内容Label
         
+        label.textColor = [UIColor lightGrayColor];
+        
     })
     .LeeCustomView(customView) //添加自定义视图
     .LeeAddButton(@"添加的按钮" , ^(){
